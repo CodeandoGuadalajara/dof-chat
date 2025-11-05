@@ -3,7 +3,7 @@ name = "dof-chat"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13.2"
 dependencies = [
     "air>=0.38.1",
     "fastapi[standard]>=0.120.0",
