@@ -3,9 +3,7 @@
 > Your intelligent assistant for navigating Mexico's official legal documents
 
 ![Python Version](https://img.shields.io/badge/python-3.14%2B-blue)
-<!--
-TODO: Check license type
- ![License](https://img.shields.io/badge/license-MIT-green) -->
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 DOF Chat is a web application that enables natural language querying of the Diario Oficial de la Federación (DOF), Mexico's official government publication. By leveraging AI, it transforms complex legal documents into accessible, conversational information for citizens, legal professionals, and researchers.
 
@@ -131,7 +129,10 @@ For questions or discussions about the project architecture, check out our [GitH
 TODO: Create LICENSE
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. -->
+This project is licensed under the GNU Affero General Public License v3.0.
+
+See the [LICENSE](LICENSE) file for the full license text, or visit 
+<https://www.gnu.org/licenses/agpl-3.0.html>
 
 ---
 
