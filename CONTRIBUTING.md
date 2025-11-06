@@ -58,13 +58,40 @@ uv sync --frozen
 > 2. Click OK/Apply. More details: https://www.jetbrains.com/help/pycharm/uv.html
 
 
-#### 7. Make a single commit that includes your tracked file changes with a clear message.
+#### 7. Commit your changes using Conventional Commits.
 
+We use [Conventional Commits](https://www.conventionalcommits.org/) for clear, consistent commit messages. You can make one or multiple commits as needed.
+
+**Basic format:**
 ```bash
-git commit -am "<type>(<optional scope>): <description><optional body><optional footer>"
+git commit -m "<type>(<optional scope>): <description>"
 ```
 
-For more info, see: [Conventional Commits Cheatsheet](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13)
+**Common types:**
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, missing semicolons, etc.)
+- `refactor`: Code changes that neither fix a bug nor add a feature
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks (dependencies, build config, etc.)
+
+**Examples:**
+```bash
+git commit -m "feat: add user authentication endpoint"
+git commit -m "fix(api): handle null values in response parser"
+git commit -m "docs: update installation instructions"
+git commit -m "test: add unit tests for data validation"
+```
+
+**Best practices:**
+- Keep commits focused on a single logical change
+- Use the imperative mood ("add feature" not "added feature")
+- Keep the description concise (50 characters or less is ideal)
+- Stage and commit related changes together: `git add <files>` then `git commit -m "..."`
+- You can add multiple commits to your branch before pushing
+
+For more details, see: [Conventional Commits Cheatsheet](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13)
 
 #### 8. Push your branch to your fork and set the remote tracking.
 
