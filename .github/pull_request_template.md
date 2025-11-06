@@ -4,7 +4,8 @@
 * a summary of changes in code
 * which issues it fixes, if any
 
-## Screenshots/videos:
+## How to test or use:
+Put screenshots, video, CURL commands, or other means to test or use the code changes.
 
 
 ## Checklist:
