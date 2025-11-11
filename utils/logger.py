@@ -15,6 +15,7 @@ def setup_logger() -> logging.Logger:
             '%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s:%(lineno)d - %(message)s'
         ))
         logger.addHandler(handler)
+        logger.propagate = False
     
     return logger
 

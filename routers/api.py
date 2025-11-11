@@ -47,10 +47,13 @@ async def handle_chat(
         return response
         
     except Exception as e:
-        logger.error(f"Chat handling failed: {e}")
+        # Log detailed error information for debugging
+        logger.error(f"Chat handling failed: {e}", exc_info=True)
+        
+        # Return generic error message to client for security
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail="Lo siento, hubo un error al procesar tu consulta. Por favor, inténtalo de nuevo más tarde."
         )
 
 

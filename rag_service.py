@@ -6,6 +6,8 @@ Tests: query embedding → vector search → LLM generation → Air component re
 Current mode: Full simulation for testing component connectivity.
 """
 
+import time
+import threading
 from typing import List
 from config import settings
 from database import db_manager
@@ -17,19 +19,23 @@ from utils.context_renderer import render_embedded_sources
 class RAGService:
     """Mock RAG service for testing component integration.
     
-    Singleton pattern with mock implementations for all operations.
+    Thread-safe singleton pattern with mock implementations for all operations.
     Tests connectivity between components without real model dependencies.
     """
     
     _instance = None
+    _lock = threading.Lock()
     
     def __new__(cls):
+        # Double-checked locking pattern for thread safety
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._initialized = False
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
         return cls._instance
     
     def __init__(self):
+        # Only initialize once using instance attribute check
         if not hasattr(self, '_initialized'):
             self._initialized = False
     
@@ -210,7 +216,6 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
             document_sources = self._create_document_sources(chunks)
             
             # Step 5: Render context HTML using Air components
-            import time
             query_id = f"q{int(time.time())}"
             context_component = render_embedded_sources(document_sources, query_id)
             
@@ -243,9 +248,12 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
             return response
             
         except Exception as e:
-            logger.error(f"Query processing failed: {e}")
+            # Log detailed error with stack trace for debugging
+            logger.error(f"Query processing failed: {e}", exc_info=True)
+            
+            # Return generic user-friendly error message
             return EnrichedChatResponse(
-                answer=f"Lo siento, hubo un error al procesar tu consulta: {str(e)}",
+                answer="Lo siento, hubo un error al procesar tu consulta. Por favor, inténtalo de nuevo más tarde.",
                 context_html="",
                 sources=[]
             )

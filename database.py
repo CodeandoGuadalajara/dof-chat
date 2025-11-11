@@ -20,7 +20,7 @@ class DatabaseManager:
         self._connection = None
     
     def connect(self) -> duckdb.DuckDBPyConnection:
-        """Establish connection to DuckDB database.
+        """Establish connection to DuckDB database with validation.
         
         Returns:
             DuckDB connection object
@@ -28,6 +28,17 @@ class DatabaseManager:
         if not os.path.exists(self.db_path):
             logger.error(f"Database file not found: {self.db_path}")
             raise FileNotFoundError(f"Database file not found: {self.db_path}")
+        
+        # Check if connection exists and is still valid
+        if self._connection is not None:
+            try:
+                # Test connection validity with a simple query
+                result = self._connection.execute("SELECT 1").fetchone()
+                if result != (1,):
+                    raise Exception("Database connection validation failed: unexpected result")
+            except Exception as e:
+                logger.warning(f"Existing connection failed validation, reconnecting: {e}")
+                self._connection = None
         
         if self._connection is None:
             logger.info(f"Connecting to database: {self.db_path}")

@@ -30,14 +30,19 @@ MAIN FUNCTIONS:
 4. _process_markdown_to_components() → Converts Markdown to Air components
 """
 
+import html
 import re
 import time
 from typing import List
-from air import Details, Summary, Div, Strong, A, Span, Br
+from air import Details, Summary, Div, Strong, A, Span, Br, H1, H2, H3, H4, Em
 from schemas import DocumentSource, ChunkData
 
+# Pre-compile regex patterns for better performance
+_BOLD_PATTERN = re.compile(r'\*\*(.*?)\*\*')
+_ITALIC_PATTERN = re.compile(r'(?<!\*)\*([^*]+?)\*(?!\*)')
 
-def render_embedded_sources(sources: List[DocumentSource], query_id: str = None) -> Details:
+
+def render_embedded_sources(sources: List[DocumentSource], query_id: str = None) -> Div:
     """Converts RAG document sources into interactive Air accordion components.
     
     Args:
@@ -208,17 +213,13 @@ def _process_markdown_to_components(text: str) -> List:
     for line in lines:
         # Process headers (order matters: most specific first)
         if line.startswith('#### '):
-            from air import H4
-            components.append(H4(line[5:]))
+            components.append(H4(html.escape(line[5:])))
         elif line.startswith('### '):
-            from air import H3
-            components.append(H3(line[4:]))
+            components.append(H3(html.escape(line[4:])))
         elif line.startswith('## '):
-            from air import H2
-            components.append(H2(line[3:]))
+            components.append(H2(html.escape(line[3:])))
         elif line.startswith('# '):
-            from air import H1
-            components.append(H1(line[2:]))
+            components.append(H1(html.escape(line[2:])))
         else:
             # Process inline formatting for regular lines
             line_components = _process_inline_formatting(line)
@@ -246,26 +247,25 @@ def _process_inline_formatting(text: str) -> List:
     components = []
     
     # Process bold patterns first (**text**)
-    parts = re.split(r'\*\*(.*?)\*\*', text)
+    parts = _BOLD_PATTERN.split(text)
     
     for i, part in enumerate(parts):
         if i % 2 == 0:
             # Even indices are regular text, check for italic
-            italic_parts = re.split(r'(?<!\*)\*([^*]+?)\*(?!\*)', part)
+            italic_parts = _ITALIC_PATTERN.split(part)
             for j, italic_part in enumerate(italic_parts):
                 if j % 2 == 0:
-                    # Regular text
+                    # Regular text - escape HTML entities for security
                     if italic_part:
-                        components.append(italic_part)
+                        components.append(html.escape(italic_part))
                 else:
-                    # Italic text
-                    from air import Em
-                    components.append(Em(italic_part))
+                    # Italic text - escape content for security
+                    components.append(Em(html.escape(italic_part)))
         else:
-            # Odd indices are bold text
-            components.append(Strong(part))
+            # Odd indices are bold text - escape content for security
+            components.append(Strong(html.escape(part)))
     
-    return components if components else [text]
+    return components if components else [html.escape(text)]
 
 
 def _get_age_text(source: DocumentSource) -> str:

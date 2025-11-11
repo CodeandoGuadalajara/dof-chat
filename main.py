@@ -2,6 +2,7 @@ import air
 from fastapi import FastAPI
 from routers import web, api
 from utils.logger import logger
+from config import settings
 
 # Initialize Air application for web routes
 app = air.Air()
@@ -10,21 +11,8 @@ app = air.Air()
 fastapi_app = FastAPI()
 fastapi_app.include_router(api.router)
 
-# Mount the API app under /api
-app.mount("/api", fastapi_app)
-
-# Mount static files directory
-app.mount("/static", air.StaticFiles(directory="static"), name="static")
-
-# Add session middleware (keeping original configuration)
-app.add_middleware(air.SessionMiddleware, secret_key="change-me")
-
-# Include web routers in Air app
-app.include_router(web.router)
-
-
-# Startup event to pre-initialize RAG service
-@app.on_event("startup")
+# Startup event to pre-initialize RAG service on FastAPI app
+@fastapi_app.on_event("startup")
 async def startup_event():
     """Initialize RAG service during application startup."""
     logger.info("Starting DOF Chat application...")
@@ -35,12 +23,20 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Failed to pre-initialize RAG service: {e}")
 
+# Mount static files directory first to avoid routing conflicts
+app.mount("/static", air.StaticFiles(directory="static"), name="static")
 
-# Health check endpoint at root level
-@app.get("/health")
-async def root_health():
-    """Root health check endpoint."""
-    return {"status": "ok", "service": "dof-chat"}
+# Mount the API app under /api
+app.mount("/api", fastapi_app)
+
+# Add session middleware with secure configuration
+app.add_middleware(air.SessionMiddleware, secret_key=settings.session_secret_key)
+
+# Include web routers in Air app
+app.include_router(web.router)
+
+
+# TODO: Authentication system implementation pending
 
 if __name__ == "__main__":
     import uvicorn
