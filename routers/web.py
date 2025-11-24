@@ -3,13 +3,21 @@
 import air
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import ValidationError
 from routers.auth import require_login, get_db_session, authenticate_user
 from pages.index import index_page
 from pages.demo import demo_page
 from pages.login import login_page
+from schemas import LoginRequest
 
 # Initialize Air router
 router = air.AirRouter()
+
+def redirect_with_error(request: air.Request, message: str):
+    """Helper to redirect to login with error message."""
+    request.session["error_message"] = message
+    return air.responses.RedirectResponse("/login", status_code=303)
+
 
 @router.page
 def demo(request: air.Request, _auth = Depends(require_login)):
@@ -32,28 +40,35 @@ async def login_form(
     request: air.Request,
     session: AsyncSession = Depends(get_db_session)
 ):
-    """Process HTML login form submission."""
-    # Minimal orchestration: validate CSRF, delegate authentication to service
+    """Process HTML login form submission with Pydantic validation."""
+    # Get form data
     form_data = await request.form()
     csrf_token = form_data.get("csrf_token")
 
     # Validate CSRF token
     if csrf_token != request.session.get("csrf_token"):
-        request.session["error_message"] = "Token de seguridad inválido. Por favor, intenta nuevamente."
-        return air.responses.RedirectResponse("/login", status_code=303)
+        return redirect_with_error(request, "Token de seguridad inválido. Por favor, intenta nuevamente.")
 
-    email = form_data.get("email")
-    password = form_data.get("password")
-
-    if not email or not password:
-        request.session["error_message"] = "Por favor, proporciona email y contraseña."
-        return air.responses.RedirectResponse("/login", status_code=303)
+    # Validate input with Pydantic
+    try:
+        login_data = LoginRequest(
+            email=form_data.get("email", ""),
+            password=form_data.get("password", "")
+        )
+    except ValidationError as e:
+        # Extract user-friendly error message
+        errors = e.errors()
+        if any(err["type"] == "value_error.email" for err in errors):
+            error_msg = "El formato del email es inválido."
+        elif any(err["loc"] == ("password",) and "at least" in str(err.get("msg", "")) for err in errors):
+            error_msg = "La contraseña debe tener al menos 8 caracteres."
+        
+        return redirect_with_error(request, error_msg)
 
     # Delegate auth logic to service helper
-    user, reason = await authenticate_user(session, email, password)
+    user, reason = await authenticate_user(session, login_data.email, login_data.password)
     if not user:
-        request.session["error_message"] = "Email o contraseña incorrectos."
-        return air.responses.RedirectResponse("/login", status_code=303)
+        return redirect_with_error(request, "Email o contraseña incorrectos.")
 
     # Save user in session and redirect
     request.session["user"] = {"id": user.id, "email": user.email}
