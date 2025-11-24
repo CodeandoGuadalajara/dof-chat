@@ -175,8 +175,7 @@ def require_login(request: air.Request):
     Raises:
         HTTPException: 307 redirect to /login if not authenticated
     """
-    # Check for user authentication in session
-    user = request.session.get("user") if hasattr(request, "session") else None
+    user = request.session.get("user")
     
     if not user:
         # Redirect if not logged in
