@@ -1,61 +1,36 @@
+
 import air
-from fastapi import Depends, HTTPException
+import airsqlmodel as sql
+from routers import web, api, auth
+import logging
+from config import settings
 
-app = air.Air()
-app.add_middleware(air.SessionMiddleware, secret_key="change-me")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# --- Dependency ---
-def require_login(request: air.Request):
-    # Replace this with your actual login check
-    user = request.session.get("user") if hasattr(request, "session") else None  
+# Initialize Air application with AirSQLModel lifespan
+app = air.Air(lifespan=sql.create_async_db_lifespan(url=settings.database_url))
 
-    if not user:
-        # Redirect if not logged in
-        raise HTTPException(
-            status_code=307,
-            headers={"Location": "/login"},
-        )
-    return user
+# Add session middleware using settings with proper cookie configuration
+app.add_middleware(
+    air.SessionMiddleware,
+    secret_key=settings.session_secret_key,
+)
 
-# --- Routes ---
-@app.page
-async def index(request: air.Request):
-    return air.layouts.mvpcss(
-        air.H1('Landing page'),
-        air.P(air.A('Dashboard', href='/dashboard'))
-    )    
+# Include routers
+app.include_router(web.router)
+app.include_router(api.router)
+app.include_router(api.auth_router)  # JSON auth endpoints
 
-@app.page
-async def login():
-    return air.layouts.mvpcss(
-        air.H1('Login'),
-        # login the user
-        air.Form(
-            air.Label("Name:", for_="username"),
-            air.Input(type="text", name="username", id="username", required=True, autofocus=True),
-            air.Label("Password:", for_="password"),
-            air.Input(type="password", name="password", id="password", required=True, autofocus=True),            
-            air.Button("Login", type="submit"),
-            action="/login",
-            method="post",
-        )    
-    )
+# Health check endpoint at root level
+@app.get("/health")
+async def root_health():
+    """Root health check endpoint."""
+    return {"status": "ok", "service": "dof-chat"}
 
 
-@app.page
-async def dashboard(request: air.Request, user=Depends(require_login)):
-    return air.layouts.mvpcss(
-        air.H1(f"Dashboard for {request.session['user']['username']}"),
-        air.P(air.A('Logout', href='/logout'))
-    )
-
-@app.post('/login')
-async def login(request: air.Request):
-    form = await request.form()
-    request.session['user'] = dict(username=form.get('username'))
-    return air.RedirectResponse('/dashboard', status_code=303)
-
-@app.page
-async def logout(request: air.Request):
-    request.session.pop('user')
-    return air.RedirectResponse('/', status_code=303)
+if __name__ == "__main__":
+    import uvicorn
+    logger.info("Starting DOF Chat application...")
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
