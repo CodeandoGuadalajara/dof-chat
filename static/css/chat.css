@@ -1,0 +1,326 @@
+/* DOF Chat Demo Styles */
+
+/* CSS Variables for theming */
+:root {
+    --color-accent: #667eea;
+    --color-success: #28a745;
+    --color-warning: #ffc107;
+    --color-error: #dc3545;
+    --background-fill-primary: #ffffff;
+    --background-fill-secondary: #f8f9fa;
+    --body-text-color: #333333;
+    --body-text-color-subdued: #6c757d;
+    --border-color-primary: #dee2e6;
+    --border-color-accent: #e9ecef;
+    --spacing-sm: 0.5rem;
+    --spacing-lg: 1rem;
+    --radius-md: 6px;
+    --text-sm: 0.875rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+/* Accessibility: Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f5f5f5;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.header p {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+    width: 100%;
+}
+
+.chat-window {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    overflow-y: auto;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    max-width: 80%;
+}
+
+.message.user {
+    background: #667eea;
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.message.bot {
+    background: #e9ecef;
+    color: #333;
+    align-self: flex-start;
+    border-left: 4px solid #667eea;
+}
+
+.message.loading {
+    background: #f8f9fa;
+    color: #6c757d;
+    font-style: italic;
+    align-self: flex-start;
+}
+
+.sources {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.sources strong {
+    color: #495057;
+}
+
+.input-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 1rem;
+}
+
+/* Base form input styles */
+.form-input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    font-family: inherit;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.form-input:focus {
+    border-color: #667eea;
+}
+
+/* Chat form layout */
+#chat-form {
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+/* Chat-specific input styling */
+.chat-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Focus states (shared by form-input) */
+.chat-input:focus {
+    border-color: #667eea;
+}
+
+/* Base button styles */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: inherit;
+    font-weight: 500;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Primary button styling */
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #5a6fd8;
+}
+
+.btn-primary:disabled {
+    background: #6c757d;
+}
+
+/* === CARD COMPONENTS === */
+
+/* Basic card styling */
+.card {
+    background: var(--background-fill-primary, white);
+    border: 1px solid var(--border-color-primary, #dee2e6);
+    border-radius: var(--radius-md, 6px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 1rem;
+    background: var(--background-fill-secondary, #f8f9fa);
+    border-bottom: 1px solid var(--border-color-primary, #dee2e6);
+}
+
+.card-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--body-text-color, #333);
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.welcome-message {
+    text-align: center;
+    color: #6c757d;
+    padding: 2rem;
+    font-style: italic;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+/* === ACCORDION CONTEXT STYLES === */
+
+/* Main container for embedded sources */
+.embedded-sources-container {
+    margin-top: var(--spacing-lg);
+    background: var(--background-fill-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color-primary);
+    scroll-behavior: smooth;
+}
+
+/* Main accordion for sources */
+.embedded-sources {
+    margin: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Sources summary header */
+.embedded-sources-summary {
+    padding: 3px 5px;
+    background: var(--background-fill-primary);
+    border-radius: 3px;
+    color: var(--body-text-color);
+    font-weight: 500;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    list-style: none;
+    outline: none;
+}
+
+.embedded-sources-summary:hover {
+    background: var(--border-color-accent);
+}
+
+.embedded-sources-summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Sources content area */
+.embedded-sources-content {
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.3;
+    color: var(--body-text-color);
+    padding: 2px;
+    scroll-behavior: smooth;
+}
+
+/* Document and chunk details styling */
+details {
+    transition: all 0.2s ease;
+}
+
+details summary {
+    list-style: none;
+    outline: none;
+}
+
+details summary::-webkit-details-marker {
+    display: none;
+}
+
+details summary:hover {
+    background-color: var(--border-color-accent) !important;
+}
+
+/* Context container for bot responses */
+.context-container {
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .embedded-sources-content {
+        max-height: 200px;
+    }
+    
+    .embedded-sources-container {
+        margin-top: 0.5rem;
+        padding: 0.25rem;
+    }
+}

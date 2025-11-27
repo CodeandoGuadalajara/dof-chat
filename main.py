@@ -1,61 +1,44 @@
 import air
-from fastapi import Depends, HTTPException
+from fastapi import FastAPI
+from routers import web, api
+from utils.logger import logger
+from config import settings
 
+# Initialize Air application for web routes
 app = air.Air()
-app.add_middleware(air.SessionMiddleware, secret_key="change-me")
 
-# --- Dependency ---
-def require_login(request: air.Request):
-    # Replace this with your actual login check
-    user = request.session.get("user") if hasattr(request, "session") else None  
+# Create a separate FastAPI app for API routes to ensure proper JSON serialization
+fastapi_app = FastAPI()
+fastapi_app.include_router(api.router)
 
-    if not user:
-        # Redirect if not logged in
-        raise HTTPException(
-            status_code=307,
-            headers={"Location": "/login"},
-        )
-    return user
+# Startup event to pre-initialize RAG service on FastAPI app
+@fastapi_app.on_event("startup")
+async def startup_event():
+    """Initialize RAG service during application startup."""
+    logger.info("Starting DOF Chat application...")
+    try:
+        from rag_service import rag_service
+        rag_service.initialize()
+        logger.info("RAG service pre-initialized")
+    except Exception as e:
+        logger.error(f"Failed to pre-initialize RAG service: {e}")
 
-# --- Routes ---
-@app.page
-async def index(request: air.Request):
-    return air.layouts.mvpcss(
-        air.H1('Landing page'),
-        air.P(air.A('Dashboard', href='/dashboard'))
-    )    
+# Mount static files directory first to avoid routing conflicts
+app.mount("/static", air.StaticFiles(directory="static"), name="static")
 
-@app.page
-async def login():
-    return air.layouts.mvpcss(
-        air.H1('Login'),
-        # login the user
-        air.Form(
-            air.Label("Name:", for_="username"),
-            air.Input(type="text", name="username", id="username", required=True, autofocus=True),
-            air.Label("Password:", for_="password"),
-            air.Input(type="password", name="password", id="password", required=True, autofocus=True),            
-            air.Button("Login", type="submit"),
-            action="/login",
-            method="post",
-        )    
-    )
+# Mount the API app under /api
+app.mount("/api", fastapi_app)
+
+# Add session middleware with secure configuration
+app.add_middleware(air.SessionMiddleware, secret_key=settings.session_secret_key)
+
+# Include web routers in Air app
+app.include_router(web.router)
 
 
-@app.page
-async def dashboard(request: air.Request, user=Depends(require_login)):
-    return air.layouts.mvpcss(
-        air.H1(f"Dashboard for {request.session['user']['username']}"),
-        air.P(air.A('Logout', href='/logout'))
-    )
+# TODO: Authentication system implementation pending
 
-@app.post('/login')
-async def login(request: air.Request):
-    form = await request.form()
-    request.session['user'] = dict(username=form.get('username'))
-    return air.RedirectResponse('/dashboard', status_code=303)
-
-@app.page
-async def logout(request: air.Request):
-    request.session.pop('user')
-    return air.RedirectResponse('/', status_code=303)
+if __name__ == "__main__":
+    import uvicorn
+    logger.info("Starting DOF Chat application")
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
