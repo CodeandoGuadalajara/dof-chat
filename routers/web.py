@@ -62,6 +62,8 @@ async def login_form(
             error_msg = "El formato del email es inválido."
         elif any(err["loc"] == ("password",) and "at least" in str(err.get("msg", "")) for err in errors):
             error_msg = "La contraseña debe tener al menos 8 caracteres."
+        else:
+            error_msg = "Datos de inicio de sesión inválidos. Por favor, revisa e intenta nuevamente."
         
         return redirect_with_error(request, error_msg)
 

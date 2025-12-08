@@ -3,7 +3,7 @@
 import asyncio
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine
-from models import User, OAuthAccount
+from models import User
 from config import Settings
 
 # Load settings

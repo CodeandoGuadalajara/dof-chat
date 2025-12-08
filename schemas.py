@@ -1,7 +1,7 @@
 """Pydantic schemas for API endpoints."""
 
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List
 
 
 class ChatQuery(BaseModel):
@@ -41,12 +41,11 @@ class LoginRequest(BaseModel):
     
     email: EmailStr = Field(
         ...,
-        max_length=50,
-        description="Valid email address (RFC 5321)"
+        max_length=254,
+        description="Valid email address"
     )
     password: str = Field(
         ...,
         min_length=8,
-        max_length=32,
-        description="Password between 8 and 32 characters"
+        description="Password with at least 8 characters"
     )

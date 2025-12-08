@@ -15,18 +15,16 @@ On successful authentication, the user's GitHub access token is stored
 in the session under `github_access_token`.
 """
 
-from datetime import datetime, timezone
 import secrets
-from typing import Optional, Callable, Tuple
+from typing import Optional, Tuple
 import air
 import airsqlmodel as sql
 import bcrypt
 from config import settings
-from fastapi import HTTPException, Depends
-from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from models import User, OAuthAccount
+from models import User
 
 
 async def get_db_session():

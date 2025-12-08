@@ -46,7 +46,7 @@ def login_page(request: air.Request):
                 air.Input(
                     type="password",
                     name="password",
-                    placeholder="Contraseña",
+                    placeholder="Password",
                     required=True,
                     style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; "
                           "border: 2px solid #e9ecef; border-radius: 6px; font-size: 1rem;"
