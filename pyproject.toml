@@ -7,4 +7,12 @@ requires-python = ">=3.13.2"
 dependencies = [
     "air>=0.38.1",
     "fastapi[standard]>=0.120.0",
+    "accelerate>=1.11.0",
+    "duckdb>=1.4.1",
+    "google-genai>=0.3.2",
+    "pydantic>=2.12.4",
+    "pydantic-settings>=2.11.0",
+    "python-dotenv>=1.2.1",
+    "sentence-transformers>=5.1.2",
+    "torch>=2.9.0",
 ]

@@ -1,0 +1,161 @@
+/* DOF Chat Context Accordion Styles */
+
+/* CSS Variables for consistency with main theme */
+:root {
+    --context-text-xs: 0.75em;
+    --context-text-sm: 0.8em;
+    --context-text-md: 0.9em;
+    --context-padding-xs: 3px;
+    --context-padding-sm: 4px;
+    --context-padding-md: 6px;
+    --context-margin-xs: 2px;
+    --context-margin-sm: 4px;
+    --context-margin-md: 6px;
+    --context-border-radius-sm: 2px;
+    --context-border-radius-md: 3px;
+    --context-border-radius-lg: 6px;
+}
+
+/* === DOCUMENT SECTION STYLES === */
+
+/* Document metadata (date and URL) */
+.document-metadata {
+    margin-bottom: var(--context-margin-sm);
+    font-size: var(--context-text-sm);
+    color: var(--body-text-color, #333);
+    background: var(--background-fill-secondary, #f8f9fa);
+    padding: var(--context-padding-xs);
+    border-radius: var(--context-border-radius-md);
+}
+
+/* Links within document metadata */
+.document-metadata-link {
+    color: var(--color-accent, #667eea);
+    text-decoration: none;
+}
+
+.document-metadata-link:hover {
+    text-decoration: underline;
+}
+
+/* Document summary header */
+.document-summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--context-text-md);
+    color: var(--body-text-color, #333);
+    padding: var(--context-padding-md);
+    background: var(--background-fill-secondary, #f8f9fa);
+    border-radius: var(--context-border-radius-lg) var(--context-border-radius-lg) 0 0;
+}
+
+.document-summary:hover {
+    background: var(--border-color-accent, #e9ecef);
+}
+
+/* Document statistics span within summary */
+.document-stats {
+    font-size: var(--context-text-xs);
+    color: var(--body-text-color-subdued, #6c757d);
+    font-weight: 400;
+}
+
+/* Document content area */
+.document-content {
+    padding: var(--context-padding-md);
+    background: var(--background-fill-primary, #fff);
+    border-radius: 0 0 var(--context-border-radius-lg) var(--context-border-radius-lg);
+}
+
+/* Document details container */
+.document-details {
+    margin-bottom: var(--context-margin-md);
+    border: 1px solid var(--border-color-accent, #ddd);
+    border-radius: var(--context-border-radius-lg);
+    background: var(--background-fill-primary, #fff);
+}
+
+/* === CHUNK/FRAGMENT STYLES === */
+
+/* Chunk summary header */
+.chunk-summary {
+    cursor: pointer;
+    padding: var(--context-padding-sm);
+    font-weight: 500;
+    font-size: var(--context-text-sm);
+    color: var(--body-text-color, #333);
+    background: var(--background-fill-secondary, #f8f9fa);
+    border-radius: var(--context-border-radius-md) var(--context-border-radius-md) 0 0;
+}
+
+.chunk-summary:hover {
+    background: var(--border-color-accent, #e9ecef);
+}
+
+/* Chunk content wrapper */
+.chunk-content-wrapper {
+    padding: var(--context-padding-sm);
+    background: var(--background-fill-primary, #fff);
+    max-height: 150px;
+    overflow-y: auto;
+    line-height: 1.4;
+    font-size: var(--context-text-xs);
+    border-radius: 0 0 var(--context-border-radius-md) var(--context-border-radius-md);
+}
+
+/* Chunk text content */
+.chunk-content {
+    background: var(--background-fill-secondary, #f8f9fa);
+    padding: var(--context-padding-sm);
+    border-radius: var(--context-border-radius-sm);
+    color: var(--body-text-color, #333);
+    border: 1px solid var(--border-color-primary, #ddd);
+}
+
+/* Chunk details container */
+.chunk-details {
+    margin: var(--context-margin-xs) 0;
+    border: 1px solid var(--border-color-accent, #ddd);
+    border-radius: var(--context-padding-sm);
+    background: var(--background-fill-primary, #fff);
+}
+
+/* === RESPONSIVE BEHAVIOR === */
+
+@media (max-width: 768px) {
+    .chunk-content-wrapper {
+        max-height: 120px;
+        font-size: 0.7em;
+    }
+    
+    .document-summary {
+        font-size: 0.85em;
+        padding: var(--context-padding-sm);
+    }
+    
+    .chunk-summary {
+        font-size: 0.75em;
+        padding: var(--context-padding-xs);
+    }
+}
+
+/* === ACCESSIBILITY === */
+
+/* Focus states for keyboard navigation */
+.document-summary:focus,
+.chunk-summary:focus {
+    outline: 2px solid var(--color-accent, #667eea);
+    outline-offset: 2px;
+}
+
+/* Improved contrast for better readability */
+.document-metadata,
+.chunk-content {
+    border: 1px solid var(--border-color-primary, #ddd);
+}
+
+/* Smooth transitions for interactive elements */
+.document-summary,
+.chunk-summary {
+    transition: background-color 0.2s ease;
+}
