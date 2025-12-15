@@ -1,6 +1,6 @@
 """Pydantic schemas for API endpoints."""
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field
 from typing import List
 
 
@@ -34,18 +34,3 @@ class HealthCheck(BaseModel):
     status: str = Field(default="ok")
     service: str = Field(default="dof-chat")
     version: str = Field(default="0.1.0")
-
-
-class LoginRequest(BaseModel):
-    """Schema for login request validation."""
-    
-    email: EmailStr = Field(
-        ...,
-        max_length=254,
-        description="Valid email address"
-    )
-    password: str = Field(
-        ...,
-        min_length=8,
-        description="Password with at least 8 characters"
-    )

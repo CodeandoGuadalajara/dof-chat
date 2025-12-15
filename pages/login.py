@@ -1,78 +1,72 @@
+"""Página de login personalizada con estilos de Air."""
 import air
-from routers.auth import generate_csrf_token
+from airclerk import settings
+from airclerk.main import sanitize_next, _to_httpx_request
+from clerk_backend_api import Clerk
+from clerk_backend_api.security.types import AuthenticateRequestOptions
 
 
-def login_page(request: air.Request):
-    
-    csrf_token = generate_csrf_token()
-    request.session["csrf_token"] = csrf_token
-    
-    # Retrieve error message from session (flash message pattern)
-    error_message = request.session.pop("error_message", None)
-    
-    # Build error alert if there's a message
-    error_alert = None
-    if error_message:
-        error_alert = air.Div(
-            air.P(
-                error_message,
-                style="margin: 0; font-weight: 500;"
-            ),
-            style="max-width: 400px; margin: 0 auto 1.5rem auto; padding: 1rem; "
-                  "background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; "
-                  "border-radius: 6px; text-align: center;"
+async def login_page(request: air.Request, next: str = "/"):
+    """
+    Login personalizado usando layouts nativos de Air.
+    Página limpia y centrada con fondo blanco.
+    """
+    httpx_request = await _to_httpx_request(request)
+    origin = f"{request.url.scheme}://{request.url.netloc}"
+    next = sanitize_next(next)
+
+    with Clerk(bearer_auth=settings.CLERK_SECRET_KEY) as clerk:
+        state = clerk.authenticate_request(
+            httpx_request,
+            AuthenticateRequestOptions(authorized_parties=[origin]),
         )
-    
-    return air.layouts.mvpcss(
-        air.Title("Login - DOF Chat"),
-        air.H1("Iniciar Sesión", style="text-align: center; margin-bottom: 2rem;"),
-        
-        # Show error alert if exists
-        error_alert if error_alert else air.Div(),
-        
-        # Classic login form
-        air.Div(
-            air.H2("Login con Email y Contraseña", 
-                   style="font-size: 1.2rem; margin-bottom: 1rem; color: #495057;"),
-            air.Form(
-                air.Input(
-                    type="email",
-                    name="email",
-                    placeholder="Email",
-                    required=True,
-                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; "
-                          "border: 2px solid #e9ecef; border-radius: 6px; font-size: 1rem;"
-                ),
-                air.Input(
-                    type="password",
-                    name="password",
-                    placeholder="Password",
-                    required=True,
-                    style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; "
-                          "border: 2px solid #e9ecef; border-radius: 6px; font-size: 1rem;"
-                ),
-                air.Input(
-                    type="hidden",
-                    name="csrf_token",
-                    value=csrf_token
-                ),
-                air.Button(
-                    "Entrar con Email",
-                    type="submit",
-                    style="width: 100%; padding: 0.75rem; background: #667eea; "
-                          "color: white; border: none; border-radius: 6px; "
-                          "font-size: 1rem; cursor: pointer; margin-bottom: 1rem;"
-                ),
-                method="post",
-                action="/login"
+
+        if state.is_signed_in:
+            return air.RedirectResponse(
+                next if next != "/" else settings.CLERK_LOGIN_REDIRECT_ROUTE
+            )
+
+        return air.layouts.mvpcss(
+            air.Title("Iniciar Sesión"),
+            air.Style("""
+                body {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                }
+                main {
+                    max-width: 450px;
+                    width: 100%;
+                }
+                #sign-in {
+                    width: 100%;
+                }
+            """),
+            air.Script(
+                src=settings.CLERK_JS_SRC,
+                async_=True,
+                crossorigin="anonymous",
+                **{"data-clerk-publishable-key": settings.CLERK_PUBLISHABLE_KEY},
             ),
-            style="max-width: 400px; margin: 0 auto 2rem auto; padding: 2rem; "
-                  "background: white; border-radius: 8px; "
-                  "box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
-        ),
-        
-        air.P(
-            air.A("← Volver al inicio", href="/"),
-            style="text-align: center; margin-top: 2rem;"
+            air.Article(
+                air.Div(id="sign-in"),
+                air.Script(f"""
+                    document.addEventListener('DOMContentLoaded', async () => {{
+                        if (!window.Clerk) return;
+                        
+                        await window.Clerk.load();
+                        
+                        if (window.Clerk.user) {{
+                            window.location.assign('{next}');
+                            return;
+                        }}
+                        
+                        window.Clerk.mountSignIn(
+                            document.getElementById('sign-in'),
+                            {{ redirectUrl: '{next}' }}
+                        );
+                    }});
+                """),
+            ),
         )
-    )
