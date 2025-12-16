@@ -1,4 +1,3 @@
-"""Página de login personalizada con estilos de Air."""
 import air
 from airclerk import settings
 from airclerk.main import sanitize_next, _to_httpx_request
@@ -7,10 +6,6 @@ from clerk_backend_api.security.types import AuthenticateRequestOptions
 
 
 async def login_page(request: air.Request, next: str = "/"):
-    """
-    Login personalizado usando layouts nativos de Air.
-    Página limpia y centrada con fondo blanco.
-    """
     httpx_request = await _to_httpx_request(request)
     origin = f"{request.url.scheme}://{request.url.netloc}"
     next = sanitize_next(next)
