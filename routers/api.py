@@ -1,35 +1,41 @@
-"""API routes for chat functionality."""
+"""API routes for chat functionality.
 
-import air
-from fastapi import Depends, HTTPException
+FastAPI router for DOF Chat REST endpoints with RAG pipeline integration.
+Uses FastAPI (not Air) for proper JSON serialization of accordion HTML responses.
 
-from schemas import ChatQuery, ChatResponse, HealthCheck
+Endpoints:
+- POST /v1/chat: Main chat endpoint with RAG pipeline
+- GET /v1/health: Service health check
+"""
+
+from fastapi import APIRouter, Depends, HTTPException
+from schemas import ChatQuery, EnrichedChatResponse, HealthCheck
 from rag_service import RAGService, get_rag_service
-import logging
+from utils.logger import logger
 
-# Configure logging
-logger = logging.getLogger(__name__)
-
-# Initialize Air router with API prefix
-router = air.AirRouter(prefix="/api/v1", tags=["chat"])
+# Initialize FastAPI router with API prefix for better JSON compatibility
+router = APIRouter(prefix="/v1", tags=["chat"])
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/chat", response_model=EnrichedChatResponse)
 async def handle_chat(
     query: ChatQuery,
     rag_service: RAGService = Depends(get_rag_service)
-) -> ChatResponse:
-    """Handle chat queries using RAG service.
+) -> EnrichedChatResponse:
+    """Handle chat queries using RAG service with enriched context.
+    
+    Processes user questions through RAG pipeline and returns responses
+    with accordion HTML context for frontend rendering.
     
     Args:
-        query: User query containing text
-        rag_service: RAG service dependency
+        query: ChatQuery object with validated user text
+        rag_service: Injected singleton RAG service instance
         
     Returns:
-        Chat response with answer and sources
+        EnrichedChatResponse: Complete response with answer and accordion HTML
         
     Raises:
-        HTTPException: If query processing fails
+        HTTPException: 500 if RAG pipeline fails
     """
     try:
         logger.info(f"Processing chat query: {query.text[:50]}...")
@@ -37,14 +43,17 @@ async def handle_chat(
         # Process query through RAG pipeline
         response = rag_service.query(query.text)
         
-        logger.info(f"Generated response with {len(response.sources)} sources")
+        logger.info(f"Generated enriched response with {len(response.sources)} sources")
         return response
         
     except Exception as e:
-        logger.error(f"Chat handling failed: {e}")
+        # Log detailed error information for debugging
+        logger.error(f"Chat handling failed: {e}", exc_info=True)
+        
+        # Return generic error message to client for security
         raise HTTPException(
             status_code=500,
-            detail=f"Internal server error: {str(e)}"
+            detail="Lo siento, hubo un error al procesar tu consulta. Por favor, inténtalo de nuevo más tarde."
         )
 
 
@@ -53,6 +62,6 @@ async def health_check() -> HealthCheck:
     """Health check endpoint.
     
     Returns:
-        Health status information
+        HealthCheck: Service health status information
     """
     return HealthCheck()
