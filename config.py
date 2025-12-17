@@ -44,14 +44,7 @@ class Settings(BaseSettings):
     # the default value "change-me" will be used.
     session_secret_key: str = "change-me"
 
-    # Clerk Authentication configuration
-    clerk_publishable_key: str = ""
-    clerk_secret_key: str = ""
-    # Optional: Custom logout route (default is /logout)
-    # clerk_logout_route: str = "/logout"
-    clerk_logout_redirect_route: str = "/"
-    
-    # No nested Config; model_config above handles env loading
+
 
 
 # Global settings instance

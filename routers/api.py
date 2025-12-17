@@ -2,7 +2,7 @@
 
 import air
 from fastapi import Depends, HTTPException
-from fastapi.responses import JSONResponse
+
 from schemas import ChatQuery, ChatResponse, HealthCheck
 from rag_service import RAGService, get_rag_service
 import logging
