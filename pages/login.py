@@ -40,28 +40,31 @@ async def login_page(request: air.Request, next: str = "/"):
             """),
             air.Script(
                 src=settings.CLERK_JS_SRC,
-                async_=True,
                 crossorigin="anonymous",
                 **{"data-clerk-publishable-key": settings.CLERK_PUBLISHABLE_KEY},
             ),
             air.Article(
                 air.Div(id="sign-in"),
-                air.Script(f"""
-                    document.addEventListener('DOMContentLoaded', async () => {{
-                        if (!window.Clerk) return;
-                        
-                        await window.Clerk.load();
-                        
-                        if (window.Clerk.user) {{
-                            window.location.assign('{next}');
+                air.Script(f"""                    
+                    function initClerk() {{
+                        if (!window.Clerk) {{
+                            setTimeout(initClerk, 100);
                             return;
                         }}
                         
-                        window.Clerk.mountSignIn(
-                            document.getElementById('sign-in'),
-                            {{ redirectUrl: '{next}' }}
-                        );
-                    }});
+                        window.Clerk.load().then(() => {{
+                            if (window.Clerk.user) {{
+                                window.location.assign('{next}');
+                                return;
+                            }}
+                            
+                            window.Clerk.mountSignIn(
+                                document.getElementById('sign-in'),
+                                {{ redirectUrl: '{next}' }}
+                            );
+                        }});
+                    }}
+                    initClerk();
                 """),
             ),
         )
