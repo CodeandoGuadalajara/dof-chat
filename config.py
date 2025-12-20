@@ -1,17 +1,14 @@
 """Configuration module for dof-chat application."""
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:
+    # Fallback for older pydantic versions or missing pydantic-settings
+    from pydantic import BaseModel as BaseSettings
 
 class Settings(BaseSettings):
     """Application settings using Pydantic Settings."""
-    
-    # Pydantic Settings v2 config
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=False,
-        extra="ignore",
-    )
     
     # Database configuration
     database_path: str = "dof_db/db.duckdb"
@@ -54,22 +51,10 @@ class Settings(BaseSettings):
     debug: bool = True
     session_secret_key: str = "change-me-in-production"
     
-    @field_validator('session_secret_key')
-    @classmethod
-    def validate_session_secret(cls, v):
-        """Warn if using default session secret in production."""
-        if v == "change-me-in-production" and not cls.model_config.get("debug", True):
-            import warnings
-            warnings.warn(
-                "Using default session secret key in production. "
-                "Please set SESSION_SECRET_KEY environment variable with a secure random value.",
-                UserWarning
-            )
-        return v
-    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 # Global settings instance
