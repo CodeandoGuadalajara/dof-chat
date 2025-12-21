@@ -1,7 +1,7 @@
 """Pydantic schemas for API data validation and serialization.
 
 Defines all data models for the DOF Chat application:
-- Document models: ChunkData, DocumentSource for RAG pipeline
+- Document models: ChunkData, DocumentSource, Document for RAG pipeline
 - Response models: ChatResponse, EnrichedChatResponse for API outputs  
 - Request models: ChatQuery for API inputs
 - Utility models: HealthCheck for monitoring
@@ -9,6 +9,7 @@ Defines all data models for the DOF Chat application:
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 
 class ChunkData(BaseModel):
@@ -29,6 +30,40 @@ class ChunkData(BaseModel):
     doc_type: str = Field(
         default="DOCUMENTO",
         description="Type of document (LEY, REGLAMENTO, NORMA, etc.)"
+    )
+    document_id: int = Field(
+        ...,
+        description="ID of the source document for this chunk"
+    )
+        
+
+
+class Document(BaseModel):
+    """Document metadata from database.
+    
+    Represents a source document with metadata for internal use
+    and document source creation.
+    """
+    
+    id: int = Field(
+        ...,
+        description="Document ID from database"
+    )
+    title: str = Field(
+        ...,
+        description="Document title or filename"
+    )
+    url: Optional[str] = Field(
+        default=None,
+        description="URL to the original document"
+    )
+    file_path: Optional[str] = Field(
+        default=None,
+        description="Path to the document file"
+    )
+    created_at: Optional[datetime] = Field(
+        default=None,
+        description="Document creation timestamp"
     )
 
 

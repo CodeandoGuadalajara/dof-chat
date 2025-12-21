@@ -12,6 +12,7 @@ from typing import List
 from config import settings
 from database import db_manager
 from schemas import EnrichedChatResponse, ChunkData, DocumentSource
+from services.vector_db_service import get_vector_db_service
 from utils.logger import logger
 from utils.context_renderer import render_embedded_sources
 
@@ -38,6 +39,7 @@ class RAGService:
         # Only initialize once using instance attribute check
         if not hasattr(self, '_initialized'):
             self._initialized = False
+            self._retrieved_documents = []  # Store documents from vector search
     
     def initialize(self):
         """Initialize service with mock implementations."""
@@ -91,56 +93,32 @@ class RAGService:
         return mock_embedding
     
     def search_chunks(self, embedding: List[float], top_k: int = None) -> List[ChunkData]:
-        """Search for similar chunks (mock implementation).
+        """Search for similar chunks using VectorDBService.
+        
+        Delegates vector similarity search to VectorDBService and stores
+        retrieved documents for later use in document source creation.
         
         Args:
-            embedding: Query embedding vector (unused in mock)
+            embedding: Query embedding vector for similarity search
             top_k: Number of results to return
             
         Returns:
-            List[ChunkData]: Mock document chunks with realistic data
+            List[ChunkData]: Document chunks from database ordered by relevance
         """
         if top_k is None:
             top_k = settings.max_chunks
         
-        # TODO: Replace with real DuckDB vector search
-        # TODO: Execute vector similarity search against embeddings table
-        # TODO: Return real chunks from database with metadata
+        logger.debug(f"Searching for {top_k} similar chunks using VectorDBService")
         
-        # Generate mock chunks for integration testing
-        logger.debug(f"Searching for {top_k} similar chunks")
-        logger.info("MOCK: Returning predefined document chunks")
+        # Delegate to VectorDBService for vector similarity search
+        vector_db_service = get_vector_db_service()
+        chunks, documents = vector_db_service.search_similar_chunks(embedding, top_k)
         
-        mock_chunks_data = [
-            {
-                "text": "LEY DEL IMPUESTO SOBRE LA RENTA - Artículo 1.- Las personas físicas y las morales están obligadas al pago del impuesto sobre la renta en los siguientes casos: I.- Las residentes en México, respecto de todos sus ingresos, cualquiera que sea la ubicación de la fuente de riqueza de donde procedan.",
-                "header": "Artículo 1 - Obligaciones fiscales generales",
-                "doc_type": "LEY"
-            },
-            {
-                "text": "REGLAMENTO DE SEGURIDAD Y SALUD EN EL TRABAJO - Artículo 5.- Los patrones deberán implementar un sistema de gestión de seguridad y salud en el trabajo que incluya la identificación de peligros y evaluación de riesgos.",
-                "header": "Artículo 5 - Sistemas de gestión laboral",
-                "doc_type": "REGLAMENTO"
-            },
-            {
-                "text": "NORMA Oficial Mexicana NOM-001-SEMARNAT-2021 - Que establece los límites máximos permisibles de contaminantes en las descargas de aguas residuales en aguas y bienes nacionales.",
-                "header": "NOM-001-SEMARNAT-2021 - Límites de contaminantes",
-                "doc_type": "NORMA"
-            }
-        ]
+        # Store documents for later use in _create_document_sources
+        self._retrieved_documents = documents
         
-        # Convert to ChunkData objects
-        chunk_objects = []
-        for chunk_data in mock_chunks_data[:top_k]:
-            chunk_obj = ChunkData(
-                text=chunk_data["text"],
-                header=chunk_data["header"],
-                doc_type=chunk_data["doc_type"]
-            )
-            chunk_objects.append(chunk_obj)
-        
-        logger.debug(f"Returning {len(chunk_objects)} mock ChunkData objects")
-        return chunk_objects
+        logger.info(f"Retrieved {len(chunks)} chunks from {len(documents)} documents")
+        return chunks
     
     def generate_answer(self, query: str, context_chunks: List[ChunkData]) -> str:
         """Generate answer (mock implementation).
@@ -164,7 +142,7 @@ class RAGService:
         # Extract information from chunks for realistic simulation
         chunk_summaries = []
         for i, chunk in enumerate(context_chunks):
-            chunk_summaries.append(f"• {chunk.doc_type}: {chunk.header}")
+            chunk_summaries.append(f"• {chunk.header}")
         
         # Generate a realistic simulated response
         if context_chunks:
