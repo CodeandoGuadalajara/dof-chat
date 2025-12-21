@@ -51,22 +51,10 @@ class Settings(BaseSettings):
     debug: bool = True
     session_secret_key: str = "change-me-in-production"
     
-    @field_validator('session_secret_key')
-    @classmethod
-    def validate_session_secret(cls, v):
-        """Warn if using default session secret in production."""
-        if v == "change-me-in-production" and not cls.model_config.get("debug", True):
-            import warnings
-            warnings.warn(
-                "Using default session secret key in production. "
-                "Please set SESSION_SECRET_KEY environment variable with a secure random value.",
-                UserWarning
-            )
-        return v
-    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 # Global settings instance

@@ -1,4 +1,11 @@
+"""DOF Chat - RAG system for Official Gazette document queries."""
+
+# Load environment variables first to ensure AirClerk finds them
+from dotenv import load_dotenv
+load_dotenv()
+
 import air
+import airclerk
 from fastapi import FastAPI
 from routers import web, api
 from utils.logger import logger
@@ -35,8 +42,15 @@ app.add_middleware(air.SessionMiddleware, secret_key=settings.session_secret_key
 # Include web routers in Air app
 app.include_router(web.router)
 
+# Include AirClerk router for authentication callbacks
+app.include_router(airclerk.router)
 
-# TODO: Authentication system implementation pending
+
+@app.get("/health")
+async def root_health():
+    """Root health check endpoint."""
+    return {"status": "ok", "service": "dof-chat"}
+
 
 if __name__ == "__main__":
     import uvicorn

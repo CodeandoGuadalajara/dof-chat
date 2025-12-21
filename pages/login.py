@@ -1,33 +1,90 @@
-"""Login page for DOF Chat."""
+"""Login page for DOF Chat with Clerk authentication."""
 
 import air
-from components.login_form import LoginForm
 
 
 class LoginPage:
-    """Page component for user authentication."""
+    """Page component for user authentication using Clerk."""
     
     @staticmethod
-    def render(error_message: str = None) -> air.Html:
-        """Render the login page.
+    async def render_async(request: air.Request, next: str = "/"):
+        """Render the login page with full Clerk authentication.
         
-        TODO: Login functionality is being implemented by another team member.
-        This is a placeholder page.
+        This method handles the complete Clerk authentication flow,
+        checking if user is already signed in and rendering the sign-in form.
         
         Args:
-            error_message: Optional error message to display
+            request: The Air/Starlette request object
+            next: URL to redirect after successful login
             
         Returns:
-            Air Html component for the login page
+            Air Html component or RedirectResponse if already authenticated
         """
-        return air.Html(
-            air.Head(
-                air.Title("DOF Chat - Login (TODO)"),
-                air.Meta(charset="UTF-8"),
-                air.Meta(name="viewport", content="width=device-width, initial-scale=1.0"),
-            ),
-            air.Body(
-                LoginForm.create(),
-                style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 2rem;"
+        # Lazy imports to ensure dotenv is loaded first via main.py
+        from airclerk import settings as clerk_settings
+        from airclerk.main import sanitize_next, _to_httpx_request
+        from clerk_backend_api import Clerk
+        from clerk_backend_api.security.types import AuthenticateRequestOptions
+        
+        httpx_request = await _to_httpx_request(request)
+        origin = f"{request.url.scheme}://{request.url.netloc}"
+        next_url = sanitize_next(next)
+
+        with Clerk(bearer_auth=clerk_settings.CLERK_SECRET_KEY) as clerk:
+            state = clerk.authenticate_request(
+                httpx_request,
+                AuthenticateRequestOptions(authorized_parties=[origin]),
             )
-        )
+
+            if state.is_signed_in:
+                return air.RedirectResponse(
+                    next_url if next_url != "/" else clerk_settings.CLERK_LOGIN_REDIRECT_ROUTE
+                )
+
+            return air.layouts.mvpcss(
+                air.Title("Iniciar Sesión"),
+                air.Style("""
+                    body {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-height: 100vh;
+                    }
+                    main {
+                        max-width: 450px;
+                        width: 100%;
+                    }
+                    #sign-in {
+                        width: 100%;
+                    }
+                """),
+                air.Script(
+                    src=clerk_settings.CLERK_JS_SRC,
+                    crossorigin="anonymous",
+                    **{"data-clerk-publishable-key": clerk_settings.CLERK_PUBLISHABLE_KEY},
+                ),
+                air.Article(
+                    air.Div(id="sign-in"),
+                    air.Script(f"""                    
+                        function initClerk() {{
+                            if (!window.Clerk) {{
+                                setTimeout(initClerk, 100);
+                                return;
+                            }}
+                            
+                            window.Clerk.load().then(() => {{
+                                if (window.Clerk.user) {{
+                                    window.location.assign('{next_url}');
+                                    return;
+                                }}
+                                
+                                window.Clerk.mountSignIn(
+                                    document.getElementById('sign-in'),
+                                    {{ redirectUrl: '{next_url}' }}
+                                );
+                            }});
+                        }}
+                        initClerk();
+                    """),
+                ),
+            )
