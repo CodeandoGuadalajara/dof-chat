@@ -30,11 +30,14 @@ class DatabaseManager:
         """
         if self._connection:
             try:
-                # Lightweight check if connection is alive
-                self._connection.execute("SELECT 1")
+                # Lightweight check if connection is alive and returns expected result
+                result = self._connection.execute("SELECT 1")
+                row = result.fetchone()
+                if not row or row[0] != 1:
+                    raise duckdb.Error("Connection validation query returned unexpected result.")
                 return self._connection
-            except Exception:
-                logger.warning("Connection lost, reconnecting...")
+            except duckdb.Error:
+                logger.warning("Connection lost or validation failed, reconnecting...", exc_info=True)
                 self._connection = None
 
         if not os.path.exists(self.db_path):
@@ -68,8 +71,11 @@ class DatabaseManager:
         try:
             self.connect()
             return {"status": "success", "db_path": self.db_path}
+        except duckdb.Error as e:
+            logger.error("Connection test failed (duckdb error)", exc_info=True)
+            return {"status": "error", "error": str(e)}
         except Exception as e:
-            logger.error(f"Connection test failed: {e}")
+            logger.error("Connection test failed (unexpected error)", exc_info=True)
             return {"status": "error", "error": str(e)}
 
 # Global instance for basic connectivity checks

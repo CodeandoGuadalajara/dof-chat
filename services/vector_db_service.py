@@ -7,6 +7,8 @@ chunks from DuckDB using cosine similarity on embeddings.
 
 from typing import List, Tuple
 from datetime import datetime
+import threading
+import duckdb
 from database import DatabaseManager
 from schemas import ChunkData, Document
 from config import settings
@@ -27,7 +29,6 @@ class VectorDBService(DatabaseManager):
             db_path: Optional path to the DuckDB database file.
         """
         super().__init__(db_path)
-        self._is_healthy = True  # Circuit breaker flag
     
     def search_similar_chunks(self, query_embedding: List[float], top_k: int = None) -> Tuple[List[ChunkData], List[Document]]:
         """Search for chunks with cosine similarity close to the query embedding.
@@ -44,61 +45,46 @@ class VectorDBService(DatabaseManager):
             Tuple[List[ChunkData], List[Document]]: A tuple containing:
                 - List of matching ChunkData objects.
                 - List of unique Document objects associated with those chunks.
-                
-        Note:
-            Returns mock data if the database query fails.
-            Implements a circuit breaker: after the first failure, it switches to mock-only mode.
         """
         top_k = top_k or settings.max_chunks
-        
-        # If developer forces mock mode in config, always return mock data
-        if getattr(settings, "force_mock_mode", False):
+
+        # Use mocks only when explicitly enabled (development/testing)
+        if settings.force_mock_mode:
             logger.info("Force mock mode enabled - serving mock data for vector search")
             return self._get_mock_data(top_k)
 
-        # Circuit breaker: If DB previously failed, use mocks immediately without retrying SQL
-        if not self._is_healthy:
-            return self._get_mock_data(top_k)
-        
-        try:
-            conn = self.connect()
-            
-            # Optimized query: Fetch chunks + doc info in one shot
-            query = f"""
-                SELECT c.text, c.header, c.document_id,
-                       d.id, d.title, d.url, d.file_path, d.created_at
-                FROM chunks c
-                JOIN documents d ON c.document_id = d.id
-                WHERE c.embedding IS NOT NULL
-                ORDER BY array_cosine_similarity(c.embedding, ?::FLOAT[{settings.embedding_dimension}]) DESC
-                LIMIT ?
-            """
-            
-            rows = conn.execute(query, [query_embedding, top_k]).fetchall()
-            
-            chunks = []
-            documents = []
-            seen_docs = set()
-            
-            for row in rows:
-                text, header, doc_id, d_id, d_title, d_url, d_path, d_date = row
-                
-                chunks.append(ChunkData(text=text or "", header=header or "", document_id=doc_id))
-                
-                if d_id not in seen_docs:
-                    documents.append(Document(
-                        id=d_id, title=d_title or "", url=d_url, 
-                        file_path=d_path, created_at=d_date
-                    ))
-                    seen_docs.add(d_id)
-            
-            logger.info(f"Found {len(chunks)} chunks in {len(documents)} docs")
-            return chunks, documents
+        # Execute vector similarity search query
+        query = f"""
+            SELECT c.text, c.header, c.document_id,
+                   d.id, d.title, d.url, d.file_path, d.created_at
+            FROM chunks c
+            JOIN documents d ON c.document_id = d.id
+            WHERE c.embedding IS NOT NULL
+            ORDER BY array_cosine_similarity(c.embedding, ?::FLOAT[{settings.embedding_dimension}]) DESC
+            LIMIT ?
+        """
 
-        except Exception as e:
-            logger.warning(f"Vector search failed (disabling DB, using mocks). Error: {e}")
-            self._is_healthy = False
-            return self._get_mock_data(top_k)
+        with duckdb.connect(self.db_path, read_only=True) as conn:
+            rows = conn.execute(query, [query_embedding, top_k]).fetchall()
+
+        chunks = []
+        documents = []
+        seen_docs = set()
+
+        for row in rows:
+            text, header, doc_id, d_id, d_title, d_url, d_path, d_date = row
+
+            chunks.append(ChunkData(text=text or "", header=header or "", document_id=doc_id))
+
+            if d_id not in seen_docs:
+                documents.append(Document(
+                    id=d_id, title=d_title or "", url=d_url,
+                    file_path=d_path, created_at=d_date
+                ))
+                seen_docs.add(d_id)
+
+        logger.info(f"Found {len(chunks)} chunks in {len(documents)} docs")
+        return chunks, documents
 
     def _get_mock_data(self, top_k: int) -> Tuple[List[ChunkData], List[Document]]:
         """Provide mock data when DB is unavailable.
@@ -130,9 +116,15 @@ class VectorDBService(DatabaseManager):
         # Return slice based on top_k
         return chunks[:top_k], docs[:min(len(docs), top_k)]
 
-# Global instance
-vector_db_service = VectorDBService()
+# Lazy-initialized global instance with thread-safety
+_vector_db_service = None
+_vector_db_lock = threading.Lock()
 
 def get_vector_db_service() -> VectorDBService:
-    """Get the singleton instance of VectorDBService."""
-    return vector_db_service
+    """Get the singleton instance of VectorDBService with thread-safe initialization."""
+    global _vector_db_service
+    if _vector_db_service is None:
+        with _vector_db_lock:
+            if _vector_db_service is None:
+                _vector_db_service = VectorDBService()
+    return _vector_db_service

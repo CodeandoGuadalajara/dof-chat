@@ -248,37 +248,42 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
         Returns:
             List[DocumentSource]: Document sources grouped by type
         """
-        # Group chunks by document type for realistic simulation
+        # Use document metadata from database instead of generic doc_type.
+        # Creates lookup map: document_id -> Document for fast access to real titles, URLs, and dates.
+        doc_map = {d.id: d for d in self._retrieved_documents}
+
+        # Group chunks by their source document id
         doc_groups = {}
         for chunk in chunks:
-            doc_key = chunk.doc_type
-            if doc_key not in doc_groups:
-                doc_groups[doc_key] = []
-            doc_groups[doc_key].append(chunk)
-        
-        # Create DocumentSource objects
+            doc_id = chunk.document_id
+            if doc_id is None:
+                # fallback to grouping by doc_type if document_id is missing
+                doc_id = f"type::{chunk.doc_type or 'DOCUMENTO'}"
+            if doc_id not in doc_groups:
+                doc_groups[doc_id] = []
+            doc_groups[doc_id].append(chunk)
+
         document_sources = []
-        for doc_type, doc_chunks in doc_groups.items():
-            # Create realistic document metadata
-            if doc_type == "LEY":
-                title = "Ley del Impuesto Sobre la Renta"
-                pub_date = "15 de enero de 2024"
-                age_desc = "Reciente"
-                age_emoji = "🟢"
-                url = "https://dof.gob.mx/nota_detalle.php?codigo=5678901"
-            elif doc_type == "REGLAMENTO":
-                title = "Reglamento de Seguridad y Salud en el Trabajo"
-                pub_date = "20 de febrero de 2024"
-                age_desc = "Reciente"
-                age_emoji = "🟢"
-                url = "https://dof.gob.mx/nota_detalle.php?codigo=5678902"
-            else:  # NORMA
-                title = "NOM-001-SEMARNAT-2021"
-                pub_date = "10 de marzo de 2024"
-                age_desc = "Reciente"
-                age_emoji = "🟢"
-                url = "https://dof.gob.mx/nota_detalle.php?codigo=5678903"
-            
+        for key, doc_chunks in doc_groups.items():
+            if isinstance(key, int) and key in doc_map:
+                doc = doc_map[key]
+                title = doc.title or f"Documento {doc.id}"
+                pub_date = doc.created_at.isoformat() if doc.created_at else None
+                url = doc.url
+                age_desc = None
+                age_emoji = None
+            else:
+                # fallback metadata when document record is not available
+                if isinstance(key, str) and key.startswith("type::"):
+                    doc_type = key.split("::", 1)[1]
+                else:
+                    doc_type = "DOCUMENTO"
+                title = doc_type
+                pub_date = None
+                url = None
+                age_desc = None
+                age_emoji = None
+
             doc_source = DocumentSource(
                 title=title,
                 chunks=doc_chunks,
@@ -286,11 +291,11 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
                 publication_date=pub_date,
                 age_description=age_desc,
                 age_emoji=age_emoji,
-                metadata={"doc_type": doc_type}
+                metadata={"group_key": key}
             )
-            
+
             document_sources.append(doc_source)
-        
+
         return document_sources
 
 
