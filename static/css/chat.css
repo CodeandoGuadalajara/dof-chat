@@ -51,7 +51,7 @@ body {
     color: white;
     padding: 1rem 2rem;
     text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
@@ -77,7 +77,7 @@ body {
     flex: 1;
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 1rem;
     margin-bottom: 1rem;
     overflow-y: auto;
@@ -127,7 +127,7 @@ body {
 .input-container {
     background: white;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 1rem;
 }
 
@@ -204,7 +204,7 @@ body {
     background: var(--background-fill-primary, white);
     border: 1px solid var(--border-color-primary, #dee2e6);
     border-radius: var(--radius-md, 6px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
@@ -248,6 +248,7 @@ body {
     padding: var(--spacing-sm);
     border: 1px solid var(--border-color-primary);
     scroll-behavior: smooth;
+    position: relative;
 }
 
 /* Main accordion for sources */
@@ -269,10 +270,32 @@ body {
     transition: background-color 0.2s ease;
     list-style: none;
     outline: none;
+    display: inline-block;
 }
 
 .embedded-sources-summary:hover {
     background: var(--border-color-accent);
+}
+
+/* Toggle all button - positioned separately */
+.toggle-all-btn {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    font-size: 0.75em;
+    font-weight: 400;
+    color: var(--color-accent, #667eea);
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    opacity: 0.8;
+    background: var(--background-fill-primary);
+}
+
+.toggle-all-btn:hover {
+    opacity: 1;
+    background: rgba(102, 126, 234, 0.15);
 }
 
 .embedded-sources-summary::-webkit-details-marker {
@@ -318,7 +341,7 @@ details summary:hover {
     .embedded-sources-content {
         max-height: 200px;
     }
-    
+
     .embedded-sources-container {
         margin-top: 0.5rem;
         padding: 0.25rem;

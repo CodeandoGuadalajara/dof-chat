@@ -63,6 +63,11 @@ def render_embedded_sources(sources: List[DocumentSource], query_id: str = None)
     
     # Main container with sources accordion
     embedded_component = Div(
+        Span(
+            "Expandir ↓",
+            class_="toggle-all-btn",
+            **{"data-state": "collapsed"}
+        ),
         Details(
             Summary(
                 "📚 ",
