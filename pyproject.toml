@@ -19,4 +19,5 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "sentence-transformers>=5.1.2",
     "torch>=2.9.0",
+    "airdragon>=0.4.0",
 ]

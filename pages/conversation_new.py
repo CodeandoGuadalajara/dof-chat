@@ -7,24 +7,17 @@ from ui.button import Button
 from ui.card import Card
 from ui.form import Form
 from components.chat_message import ChatMessage
+from components.conversation_card import ConversationCard
 
 
 class ConversationNewPage:
     """Page component for new conversation (chat demo)."""
     
     @staticmethod
+    # 1. MANTENEMOS 'user' (De HEAD) porque lo necesitas para Airclerk
     def render(user) -> air.Html:
-        """Render the complete demo chat page using existing CSS classes.
+        """Render the complete demo chat page with sidebar and auth."""
         
-        Uses existing chat.css and context.css for styling.
-        Minimal responsive design without hardcoded styles.
-        
-        Args:
-            user: Authenticated user object from Clerk (Pydantic model)
-        
-        Returns:
-            Air Html component for the demo page
-        """
         user_greeting = f"Hola, {user.first_name or 'Usuario'}"
         
         return air.Html(
@@ -33,14 +26,13 @@ class ConversationNewPage:
                 air.Meta(charset="UTF-8"),
                 air.Meta(name="viewport", content="width=device-width, initial-scale=1.0"),
                 air.Link(rel="stylesheet", href="/static/css/chat.css"),
-                air.Link(rel="stylesheet", href="/static/css/context.css")
+                air.Link(rel="stylesheet", href="/static/css/context.css"),
+                air.Link(rel="stylesheet", href="/static/css/history.css")
             ),
             
             air.Body(
-                # Clerk scripts for authentication sync
                 airclerk.clerk_scripts(user),
                 
-                # User header with logout button
                 air.Div(
                     air.Div(user_greeting),
                     air.Form(
@@ -54,55 +46,75 @@ class ConversationNewPage:
                     ),
                     style="display: flex; justify-content: space-between; padding: 0.5rem 1rem; align-items: center; background: white; border-bottom: 1px solid #dee2e6;"
                 ),
-                
+
                 air.Div(
                     air.H1("DOF Chat Demo"),
                     air.P("Sistema de consultas sobre documentos del Diario Oficial de la Federación"),
                     class_="header"
                 ),
                 
+                # App layout container (sidebar + main content)
                 air.Div(
-                    # Chat window
-                    Card.create(
-                        ChatMessage.welcome_message(
-                            "¡Hola! Soy tu asistente para consultas sobre documentos del DOF. "
-                            "Puedes preguntarme sobre cualquier tema y te ayudaré a encontrar información relevante."
+                    # History sidebar panel
+                    ConversationCard.create_panel(expanded=True),
+                    
+                    # Mobile overlay
+                    ConversationCard.create_overlay(),
+                    
+                    # Main content area
+                    air.Main(
+                        air.Div(
+                            # Chat window
+                            Card.create(
+                                ChatMessage.welcome_message(
+                                    "¡Hola! Soy tu asistente para consultas sobre documentos del DOF. "
+                                    "Puedes preguntarme sobre cualquier tema y te ayudaré a encontrar información relevante."
+                                ),
+                                id="chat-window",
+                                class_="chat-window"
+                            ),
+                            
+                            # Input container
+                            air.Div(
+                                Form.create(
+                                    air.Label(
+                                        "Escribe tu consulta:",
+                                        for_="chat-input",
+                                        class_="sr-only"
+                                    ),
+                                    Input.chat(
+                                        id="chat-input",
+                                        placeholder="Escribe tu pregunta sobre documentos del DOF...",
+                                        required=True,
+                                        **{
+                                            "aria-label": "Campo de texto para consultas sobre documentos del DOF",
+                                            "autocomplete": "off"
+                                        }
+                                    ),
+                                    # Send button
+                                    Button.primary(
+                                        "Enviar",
+                                        type="submit",
+                                        id="send-button"
+                                    ),
+                                    id="chat-form"
+                                ),
+                                class_="input-container"
+                            ),
+                            
+                            class_="chat-container"
                         ),
-                        id="chat-window",
-                        class_="chat-window"
+                        class_="main-content"
                     ),
                     
-                    air.Div(
-                        Form.create(
-                            air.Label(
-                                "Escribe tu consulta:",
-                                for_="chat-input",
-                                class_="sr-only"
-                            ),
-                            Input.chat(
-                                id="chat-input",
-                                placeholder="Escribe tu pregunta sobre documentos del DOF...",
-                                required=True,
-                                **{
-                                    "aria-label": "Campo de texto para consultas sobre documentos del DOF",
-                                    "autocomplete": "off"
-                                }
-                            ),
-                            # Send button
-                            Button.primary(
-                                "Enviar",
-                                type="submit",
-                                id="send-button"
-                            ),
-                            id="chat-form"
-                        ),
-                        class_="input-container"
-                    ),
-                    
-                    class_="chat-container"
+                    class_="app-layout"
                 ),
                 
-                # JavaScript for chat functionality
-                air.Script(src="/static/js/chat.js")
+                # Mobile toggle button
+                ConversationCard.create_mobile_toggle(),
+                
+                # JavaScript for chat and history functionality
+                air.Script(src="/static/js/chat.js"),
+                air.Script(src="/static/js/history.js")
             )
         )
