@@ -30,6 +30,35 @@ class VectorDBService(DatabaseManager):
         """
         super().__init__(db_path)
     
+    def _parse_query_results(self, rows) -> Tuple[List[ChunkData], List[Document]]:
+        """Parse query results into ChunkData and Document objects.
+        
+        Extracts chunks and documents from database query results, ensuring
+        each document appears only once in the returned list.
+        
+        Args:
+            rows: Query result rows containing chunk and document data
+            
+        Returns:
+            Tuple[List[ChunkData], List[Document]]: Parsed chunks and unique documents
+        """
+        chunks = []
+        documents = []
+        seen_docs = set()
+
+        for row in rows:
+            text, header, doc_id, d_id, d_title, d_url, d_path, d_date = row
+            chunks.append(ChunkData(text=text or "", header=header or "", document_id=doc_id))
+            
+            if d_id not in seen_docs:
+                documents.append(Document(
+                    id=d_id, title=d_title or "", url=d_url,
+                    file_path=d_path, created_at=d_date
+                ))
+                seen_docs.add(d_id)
+        
+        return chunks, documents
+    
     def search_similar_chunks(self, query_embedding: List[float], top_k: int = None) -> Tuple[List[ChunkData], List[Document]]:
         """Search for chunks with cosine similarity close to the query embedding.
         
@@ -53,7 +82,7 @@ class VectorDBService(DatabaseManager):
             logger.info("Force mock mode enabled - serving mock data for vector search")
             return self._get_mock_data(top_k)
 
-        # Execute vector similarity search query
+        # Build SQL query for vector similarity search
         query = f"""
             SELECT c.text, c.header, c.document_id,
                    d.id, d.title, d.url, d.file_path, d.created_at
@@ -64,27 +93,35 @@ class VectorDBService(DatabaseManager):
             LIMIT ?
         """
 
-        with duckdb.connect(self.db_path, read_only=True) as conn:
+        # Execute vector similarity search query with error handling
+        try:
+            # Use persistent connection (DatabaseManager handles thread-safety internally)
+            conn = self.connect(read_only=True)
             rows = conn.execute(query, [query_embedding, top_k]).fetchall()
-
-        chunks = []
-        documents = []
-        seen_docs = set()
-
-        for row in rows:
-            text, header, doc_id, d_id, d_title, d_url, d_path, d_date = row
-
-            chunks.append(ChunkData(text=text or "", header=header or "", document_id=doc_id))
-
-            if d_id not in seen_docs:
-                documents.append(Document(
-                    id=d_id, title=d_title or "", url=d_url,
-                    file_path=d_path, created_at=d_date
-                ))
-                seen_docs.add(d_id)
-
-        logger.info(f"Found {len(chunks)} chunks in {len(documents)} docs")
-        return chunks, documents
+            chunks, documents = self._parse_query_results(rows)
+            logger.info(f"Found {len(chunks)} chunks in {len(documents)} docs")
+            return chunks, documents
+        
+        except duckdb.Error as e:
+            # On connection/query errors, try reconnecting once before falling back
+            logger.warning(f"Database connection or query failed, attempting reconnect: {e}")
+            try:
+                reconnected_conn = self.reconnect(read_only=True)
+                rows = reconnected_conn.execute(query, [query_embedding, top_k]).fetchall()
+                chunks, documents = self._parse_query_results(rows)
+                logger.info(f"Reconnect successful: {len(chunks)} chunks, {len(documents)} docs")
+                return chunks, documents
+                
+            except Exception as retry_error:
+                logger.error(f"Reconnect failed: {retry_error}", exc_info=True)
+                logger.warning("Falling back to mock data")
+                return self._get_mock_data(top_k)
+        
+        except (FileNotFoundError, Exception) as e:
+            logger.error(f"Database access failed: {e}", exc_info=True)
+            # Fallback to mock data on database errors
+            logger.warning("Falling back to mock data due to database error")
+            return self._get_mock_data(top_k)
 
     def _get_mock_data(self, top_k: int) -> Tuple[List[ChunkData], List[Document]]:
         """Provide mock data when DB is unavailable.

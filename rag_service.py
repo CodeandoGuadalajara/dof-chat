@@ -10,7 +10,6 @@ import time
 import threading
 from typing import List
 from config import settings
-from database import db_manager
 from schemas import EnrichedChatResponse, ChunkData, DocumentSource
 from services.vector_db_service import get_vector_db_service
 from utils.logger import logger
@@ -40,6 +39,7 @@ class RAGService:
         if not hasattr(self, '_initialized'):
             self._initialized = False
             self._retrieved_documents = []  # Store documents from vector search
+            self._vector_db_service = get_vector_db_service()  # Initialize once, reuse forever
     
     def initialize(self):
         """Initialize service with mock implementations."""
@@ -52,15 +52,8 @@ class RAGService:
         # TODO: Initialize Gemini API client
         # TODO: Validate API keys and model availability
         
-        # Test database connection (only connectivity, no model loading)
-        try:
-            db_result = db_manager.test_connection()
-            if db_result["status"] == "success":
-                logger.info("Database connected")
-            else:
-                logger.warning("Database connection failed, continuing with mocks")
-        except Exception as e:
-            logger.warning(f"Database test failed: {e}, continuing with mocks")
+        # Database connection will be established lazily on first query
+        # Each thread will get its own connection automatically via thread-local storage
         
         self._initialized = True
         logger.info("RAG service ready (mock mode)")
@@ -110,9 +103,8 @@ class RAGService:
         
         logger.debug(f"Searching for {top_k} similar chunks using VectorDBService")
         
-        # Delegate to VectorDBService for vector similarity search
-        vector_db_service = get_vector_db_service()
-        chunks, documents = vector_db_service.search_similar_chunks(embedding, top_k)
+        # Delegate to VectorDBService for vector similarity search (reuses singleton)
+        chunks, documents = self._vector_db_service.search_similar_chunks(embedding, top_k)
         
         # Store documents for later use in _create_document_sources
         self._retrieved_documents = documents
@@ -248,8 +240,7 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
         Returns:
             List[DocumentSource]: Document sources grouped by type
         """
-        # Use document metadata from database instead of generic doc_type.
-        # Creates lookup map: document_id -> Document for fast access to real titles, URLs, and dates.
+        # Create lookup map: document_id -> Document (for titles, URLs, dates)
         doc_map = {d.id: d for d in self._retrieved_documents}
 
         # Group chunks by their source document id
@@ -257,8 +248,9 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
         for chunk in chunks:
             doc_id = chunk.document_id
             if doc_id is None:
-                # fallback to grouping by doc_type if document_id is missing
-                doc_id = f"type::{chunk.doc_type or 'DOCUMENTO'}"
+                # Fallback: use hash for unique key per chunk
+                doc_id = f"unknown_{hash(chunk.text[:100]) % 2147483647}"
+                logger.warning(f"Chunk without document_id: {chunk.header[:50] if chunk.header else 'No header'}")
             if doc_id not in doc_groups:
                 doc_groups[doc_id] = []
             doc_groups[doc_id].append(chunk)
@@ -273,12 +265,8 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
                 age_desc = None
                 age_emoji = None
             else:
-                # fallback metadata when document record is not available
-                if isinstance(key, str) and key.startswith("type::"):
-                    doc_type = key.split("::", 1)[1]
-                else:
-                    doc_type = "DOCUMENTO"
-                title = doc_type
+                # Fallback when document record unavailable
+                title = "Documento sin identificar"
                 pub_date = None
                 url = None
                 age_desc = None
