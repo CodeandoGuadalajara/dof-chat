@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     # RAG configuration
     max_chunks: int = 5
     
+    # Mock mode configuration
+    force_mock_mode: bool = False  # Enable mock responses only when explicitly configured
+    
     # Application configuration
     app_name: str = "DOF Chat"
     debug: bool = True
