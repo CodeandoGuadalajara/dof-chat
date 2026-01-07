@@ -5,7 +5,8 @@ optimized for legal document retrieval tasks.
 """
 
 import threading
-from typing import List
+import random
+from typing import List, Optional
 import torch
 from sentence_transformers import SentenceTransformer
 from config import settings
@@ -23,20 +24,23 @@ class EmbeddingService:
     _lock = threading.Lock()
     
     def __new__(cls):
-        # Simplified singleton pattern - GIL provides basic atomicity
+        # Thread-safe singleton pattern using double-checked locking
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    cls._instance = super().__new__(cls)
+                    instance = super().__new__(cls)
+                    # Initialize instance attributes once, under lock, to avoid races
+                    instance.initialized = False
+                    instance._model = None
+                    instance._init_lock = threading.Lock()  # Lock for initialization only
+                    cls._instance = instance
         return cls._instance
     
     def __init__(self):
-        # Only initialize once
-        if not hasattr(self, '_initialized'):
-            self._initialized = False
-            self._model = None
-            self._init_lock = threading.Lock()  # Lock for initialization only
-    
+        # Initialization of singleton state is handled in __new__ to ensure thread safety.
+        # __init__ is intentionally left as a no-op to avoid racing re-initialization.
+        pass
+
     def initialize(self):
         """Load and configure the embedding model.
 
@@ -44,20 +48,20 @@ class EmbeddingService:
         Thread-safe implementation ensuring single model loading.
         """
         # Fast path without lock
-        if self._initialized:
+        if self.initialized:
             return
         
         # Slow path with lock for initialization
         with self._init_lock:
             # Double-check after acquiring lock
-            if self._initialized:
+            if self.initialized:
                 return
             
             # Check if mock mode is forced
             if settings.force_mock_mode:
                 logger.info("Force mock mode enabled - skipping embedding model initialization")
                 self._model = None
-                self._initialized = True
+                self.initialized = True
                 return
             
             try:
@@ -75,22 +79,28 @@ class EmbeddingService:
                 self._model.max_seq_length = settings.model_max_seq_length
                 if hasattr(self._model.tokenizer, 'model_max_length'):
                     self._model.tokenizer.model_max_length = settings.model_max_seq_length
-                if hasattr(self._model[0], 'max_position_embeddings'):
-                    self._model[0].max_position_embeddings = settings.model_max_seq_length
+                
+                # Safely set max_position_embeddings if model structure allows
+                try:
+                    first_module = self._model[0]
+                    if hasattr(first_module, 'max_position_embeddings'):
+                        first_module.max_position_embeddings = settings.model_max_seq_length
+                except (TypeError, IndexError, KeyError):
+                    pass
                 
                 # Optimize model for inference
                 self._model.to(settings.device)
                 self._model.eval()
                 torch.set_grad_enabled(False)
                 
-                self._initialized = True
+                self.initialized = True
                 logger.info(f"Embedding service ready ({settings.device}, max_seq: {settings.model_max_seq_length})")
                 
             except Exception as e:
-                logger.error(f"Failed to initialize embedding service: {e}")
+                logger.error(f"Failed to initialize embedding service: {e}", exc_info=True)
                 logger.warning("Falling back to mock embedding mode")
                 self._model = None
-                self._initialized = True
+                self.initialized = True
     
     def embed_query(self, text: str) -> List[float]:
         """Convert input text to a normalized embedding vector.
@@ -103,7 +113,7 @@ class EmbeddingService:
         Returns:
             List[float]: L2-normalized embedding vector.
         """
-        if not self._initialized:
+        if not self.initialized:
             self.initialize()
         
         # Fallback to mock on load failure
@@ -134,7 +144,7 @@ class EmbeddingService:
             return result
             
         except Exception as e:
-            logger.error(f"Embedding generation failed: {e}")
+            logger.error(f"Embedding generation failed: {e}", exc_info=True)
             logger.warning("Falling back to mock embedding")
             # Fall back to mock for robustness
             return self._generate_mock_embedding(text)
@@ -148,7 +158,6 @@ class EmbeddingService:
         Returns:
             List[float]: Randomized vector with fixed seed.
         """
-        import random
         random.seed(hash(text) % 2147483647)  # Deterministic based on text
         mock_embedding = [random.uniform(-0.1, 0.1) for _ in range(settings.embedding_dimension)]
         return mock_embedding
@@ -159,7 +168,7 @@ class EmbeddingService:
         Returns:
             dict: Metadata including status, model name, and parameters.
         """
-        if not self._initialized:
+        if not self.initialized:
             return {"status": "not_initialized"}
         
         if settings.force_mock_mode:
@@ -177,12 +186,16 @@ class EmbeddingService:
         }
 
 
-# Global singleton instance
-embedding_service = EmbeddingService()
+# Global singleton instance (lazily instantiated)
+embedding_service = None
 
 
 def get_embedding_service() -> EmbeddingService:
     """Retrieve the initialized EmbeddingService singleton."""
-    if not embedding_service._initialized:
+    global embedding_service
+    if embedding_service is None:
+        embedding_service = EmbeddingService()
+    
+    if not embedding_service.initialized:
         embedding_service.initialize()
     return embedding_service

@@ -184,6 +184,11 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
                 logger.info("Initializing RAG service")
                 self.initialize()
             
+            # Ensure embedding service is available before using it
+            if self.embedding_service is None:
+                logger.error("Embedding service is not available after initialization")
+                raise RuntimeError("Embedding service is not available")
+            
             # Step 1: Embed query
             embedding = self.embedding_service.embed_query(text)
             
