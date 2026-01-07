@@ -14,6 +14,7 @@ from database import db_manager
 from schemas import EnrichedChatResponse, ChunkData, DocumentSource
 from utils.logger import logger
 from utils.context_renderer import render_embedded_sources
+from service.embedding_service import get_embedding_service
 
 
 class RAGService:
@@ -46,7 +47,14 @@ class RAGService:
         
         logger.info("Initializing RAG service (mock mode)")
         
-        # TODO: Initialize embedding model (Qwen/Qwen3-Embedding-0.6B)
+        # Initialize embedding model (Qwen/Qwen3-Embedding-0.6B)
+        try:
+            self.embedding_service = get_embedding_service()
+            logger.info("Embedding service initialized successfully")
+        except Exception as e:
+            logger.warning(f"Embedding service initialization failed: {e}, will use mock")
+            self.embedding_service = None
+        
         # TODO: Initialize Gemini API client
         # TODO: Validate API keys and model availability
         
@@ -62,33 +70,6 @@ class RAGService:
         
         self._initialized = True
         logger.info("RAG service ready (mock mode)")
-    
-    def embed_query(self, text: str) -> List[float]:
-        """Convert query text to embedding vector (mock implementation).
-        
-        Args:
-            text: Query text to embed
-            
-        Returns:
-            List[float]: Mock embedding vector
-        """
-        if not self._initialized:
-            self.initialize()
-        
-        # TODO: Replace with real embedding model (Qwen/Qwen3-Embedding-0.6B)
-        # TODO: Initialize embedding model in initialize() method
-        # TODO: Process text through real embedding model
-        
-        # Generate mock embedding for integration testing
-        logger.debug(f"Processing embedding for text: '{text[:50]}...'")
-        logger.info("MOCK: Generating deterministic embedding vector")
-        
-        import random
-        random.seed(hash(text) % 2147483647)  # Deterministic based on text
-        mock_embedding = [random.uniform(-0.1, 0.1) for _ in range(settings.embedding_dimension)]
-        
-        logger.debug(f"Generated mock embedding with {len(mock_embedding)} dimensions")
-        return mock_embedding
     
     def search_chunks(self, embedding: List[float], top_k: int = None) -> List[ChunkData]:
         """Search for similar chunks (mock implementation).
@@ -203,8 +184,13 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
                 logger.info("Initializing RAG service")
                 self.initialize()
             
+            # Ensure embedding service is available before using it
+            if self.embedding_service is None:
+                logger.error("Embedding service is not available after initialization")
+                raise RuntimeError("Embedding service is not available")
+            
             # Step 1: Embed query
-            embedding = self.embed_query(text)
+            embedding = self.embedding_service.embed_query(text)
             
             # Step 2: Search for relevant chunks
             chunks = self.search_chunks(embedding)
