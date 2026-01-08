@@ -6,13 +6,14 @@ load_dotenv()
 
 import air
 import airclerk
+import airsqlmodel as sql
 from fastapi import FastAPI
 from routers import web, api
 from utils.logger import logger
 from config import settings
 
 # Initialize Air application for web routes
-app = air.Air()
+app = air.Air(lifespan=sql.create_async_db_lifespan())
 
 # Create a separate FastAPI app for API routes to ensure proper JSON serialization
 fastapi_app = FastAPI()

@@ -1,117 +1,44 @@
-"""Database connection utilities for DuckDB vector database."""
+"""Database connection utilities using AirSQLModel."""
 
-import duckdb
-from typing import List, Dict, Any
 import os
+from contextlib import asynccontextmanager, aclosing
+import airsqlmodel as sql
 from config import settings
-from utils.logger import logger
 
+# Ensure DATABASE_URL is set for airsqlmodel
+if not os.environ.get("DATABASE_URL"):
+    os.environ["DATABASE_URL"] = settings.database_url
 
-class DatabaseManager:
-    """Manages DuckDB connection and basic operations."""
+@asynccontextmanager
+async def get_async_session_context():
+    """
+    Provide an asynchronous database session as an async context manager.
     
-    def __init__(self, db_path: str = None):
-        """Initialize database manager.
-        
-        Args:
-            db_path: Path to DuckDB database file
-        """
-        self.db_path = db_path or settings.database_path
-        self._connection = None
+    This function wraps the airsqlmodel async generator using `aclosing` 
+    to ensure the session is properly closed even if exceptions occur, 
+    preventing context leakage or masked errors.
     
-    def connect(self) -> duckdb.DuckDBPyConnection:
-        """Establish connection to DuckDB database with validation.
-        
-        Returns:
-            DuckDB connection object
-        """
-        if not os.path.exists(self.db_path):
-            logger.error(f"Database file not found: {self.db_path}")
-            raise FileNotFoundError(f"Database file not found: {self.db_path}")
-        
-        # Check if connection exists and is still valid
-        if self._connection is not None:
-            try:
-                # Test connection validity with a simple query
-                result = self._connection.execute("SELECT 1").fetchone()
-                if result != (1,):
-                    raise Exception("Database connection validation failed: unexpected result")
-            except Exception as e:
-                logger.warning(f"Existing connection failed validation, reconnecting: {e}")
-                self._connection = None
-        
-        if self._connection is None:
-            logger.info(f"Connecting to database: {self.db_path}")
-            self._connection = duckdb.connect(self.db_path, read_only=True)
-        
-        return self._connection
-    
-    def execute_query(self, query: str, params: List[Any] = None) -> List[Dict[str, Any]]:
-        """Execute a query and return results.
-        
-        Args:
-            query: SQL query string
-            params: Query parameters
+    Usage:
+        async with get_async_session_context() as session:
+            result = await session.exec(statement)
             
-        Returns:
-            List of dictionaries with query results
-        """
-        # TODO: Add vector similarity search methods for querying embeddings
-        # TODO: Implement methods to retrieve chunks based on similarity
-        
-        conn = self.connect()
+    Yields:
+        AsyncSession: A managed SQLAlchemy async session.
+    """
+    # Use aclosing to ensure the generator's aclose() is called upon exit
+    async with aclosing(sql.get_async_session()) as session_gen:
+        try:
+            # Advance the generator to obtain the session instance
+            session = await anext(session_gen)
+        except StopAsyncIteration:
+            raise RuntimeError("Database generator failed to yield a session.") from None
         
         try:
-            if params:
-                result = conn.execute(query, params).fetchall()
-            else:
-                result = conn.execute(query).fetchall()
-            
-            # Get column names
-            columns = [desc[0] for desc in conn.description]
-            
-            # Convert to list of dictionaries
-            result_dicts = [dict(zip(columns, row)) for row in result]
-            
-            return result_dicts
-            
-        except Exception as e:
-            logger.error(f"Query execution failed: {e}")
+            yield session
+        except Exception:
+            # Exceptions are re-raised so they can be handled by the caller or middleware.
+            # 'aclosing' handles the generator cleanup without suppressing this exception.
             raise
-    
-    def close(self):
-        """Close database connection."""
-        if self._connection:
-            self._connection.close()
-            self._connection = None
-    
-    def test_connection(self) -> Dict[str, Any]:
-        """Test database connection for RAG service initialization.
-        
-        Returns:
-            Dictionary with connection test results
-        """
-        # TODO: Add schema validation for existing vector tables
-        # TODO: Verify embedding columns exist and data is available
-        
-        try:
-            self.connect()
-            
-            result = {
-                "status": "success",
-                "db_path": self.db_path
-            }
-            
-            logger.info("Database connection test successful")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Database connection test failed: {e}")
-            return {
-                "status": "error",
-                "error": str(e)
-            }
 
-
-# Global database manager instance
-db_manager = DatabaseManager()
+# Re-export dependency for FastAPI routes
+async_session_dependency = sql.async_session_dependency

@@ -41,7 +41,7 @@ async def handle_chat(
         logger.info(f"Processing chat query: {query.text[:50]}...")
         
         # Process query through RAG pipeline
-        response = rag_service.query(query.text)
+        response = await rag_service.query(query.text)
         
         logger.info(f"Generated enriched response with {len(response.sources)} sources")
         return response
