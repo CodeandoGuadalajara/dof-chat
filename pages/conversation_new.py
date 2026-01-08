@@ -27,7 +27,9 @@ class ConversationNewPage:
                 air.Meta(name="viewport", content="width=device-width, initial-scale=1.0"),
                 air.Link(rel="stylesheet", href="/static/css/chat.css"),
                 air.Link(rel="stylesheet", href="/static/css/context.css"),
-                air.Link(rel="stylesheet", href="/static/css/history.css")
+                air.Link(rel="stylesheet", href="/static/css/history.css"),
+                # Tailwind CSS CDN for utility classes in sidebar
+                air.Script(src="https://cdn.tailwindcss.com")
             ),
             
             air.Body(

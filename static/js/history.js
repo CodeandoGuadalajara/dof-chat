@@ -1,7 +1,7 @@
 /**
  * History Panel / Sidebar functionality for DOF Chat
- * ChatGPT-style sidebar interactions
  */
+
 class HistoryPanel {
     constructor() {
         // Cache DOM elements
@@ -66,8 +66,12 @@ class HistoryPanel {
         // Conversation item clicks (using event delegation)
         if (this.elements.historyList) {
             this.elements.historyList.addEventListener('click', (e) => {
-                const item = e.target.closest('.history-item');
-                if (item && !e.target.closest('.history-menu-trigger') && !e.target.closest('.history-dropdown-menu')) {
+                // Early return: skip if clicking on menu trigger or dropdown
+                if (e.target.closest('[data-menu-trigger]')) return;
+                if (e.target.closest('[data-dropdown="true"]')) return;
+
+                const item = e.target.closest('[data-conversation-id]');
+                if (item) {
                     this.handleConversationClick(item);
                 }
             });
@@ -75,7 +79,7 @@ class HistoryPanel {
 
         // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.history-item-actions-container')) {
+            if (!e.target.closest('[data-dropdown-container]')) {
                 this.closeAllDropdowns();
             }
         });
@@ -90,14 +94,14 @@ class HistoryPanel {
     }
 
     initializeDropdownMenus() {
-        // Event delegation for dropdown triggers
+        // Event delegation for dropdown triggers - using data-menu-trigger
         document.addEventListener('click', (e) => {
-            const trigger = e.target.closest('.history-menu-trigger');
+            const trigger = e.target.closest('[data-menu-trigger]');
             if (!trigger) return;
 
             e.stopPropagation();
-            const container = trigger.closest('.history-item-actions-container');
-            const dropdown = container?.querySelector('.history-dropdown-menu');
+            const container = trigger.closest('[data-dropdown-container]');
+            const dropdown = container?.querySelector('[data-dropdown="true"]');
 
             if (dropdown) {
                 // Close other dropdowns first
@@ -108,21 +112,27 @@ class HistoryPanel {
 
         // Handle dropdown menu item clicks
         document.addEventListener('click', (e) => {
-            const menuItem = e.target.closest('.history-menu-item');
+            const menuItem = e.target.closest('[data-dropdown="true"] button');
             if (!menuItem) return;
 
             e.stopPropagation();
-            const container = menuItem.closest('.history-item-actions-container');
-            const item = container?.closest('.history-item');
+            const container = menuItem.closest('[data-dropdown-container]');
+            const item = container?.closest('[data-conversation-id]');
             const conversationId = item?.dataset.conversationId;
 
-            if (menuItem.classList.contains('delete')) {
-                this.handleDeleteConversation(conversationId, item);
-            } else if (menuItem.querySelector('.menu-item-icon svg path[d*="M17 3"]')) {
-                // Edit/Rename based on SVG path
-                this.handleRenameConversation(conversationId, item);
-            } else {
-                this.handleShareConversation(conversationId);
+            // Detect action by data-action attribute
+            const action = menuItem.dataset.action;
+
+            switch (action) {
+                case 'delete':
+                    this.handleDeleteConversation(conversationId, item);
+                    break;
+                case 'rename':
+                    this.handleRenameConversation(conversationId, item);
+                    break;
+                case 'share':
+                    this.handleShareConversation(conversationId);
+                    break;
             }
 
             this.closeAllDropdowns();
@@ -132,29 +142,33 @@ class HistoryPanel {
     toggleSidebar(forceExpand = false) {
         if (!this.elements.sidebar) return;
 
-        if (forceExpand) {
-            this.elements.sidebar.classList.add('expanded');
+        const isCurrentlyExpanded = this.elements.sidebar.getAttribute('data-state') === 'expanded';
+
+        if (forceExpand || !isCurrentlyExpanded) {
+            this.elements.sidebar.setAttribute('data-state', 'expanded');
         } else {
-            this.elements.sidebar.classList.toggle('expanded');
+            this.elements.sidebar.setAttribute('data-state', 'collapsed');
         }
 
         // Show/hide overlay on mobile
         if (this.isMobile() && this.elements.overlay) {
-            this.elements.overlay.classList.toggle('visible', this.isSidebarExpanded());
+            this.elements.overlay.classList.toggle('visible', !this.isSidebarExpanded());
         }
     }
 
+
+
     closeSidebar() {
         if (!this.elements.sidebar) return;
-        this.elements.sidebar.classList.remove('expanded');
-        
+        this.elements.sidebar.setAttribute('data-state', 'collapsed');
+
         if (this.elements.overlay) {
             this.elements.overlay.classList.remove('visible');
         }
     }
 
     isSidebarExpanded() {
-        return this.elements.sidebar?.classList.contains('expanded') ?? false;
+        return this.elements.sidebar?.getAttribute('data-state') === 'expanded';
     }
 
     isMobile() {
@@ -162,20 +176,15 @@ class HistoryPanel {
     }
 
     closeAllDropdowns() {
-        document.querySelectorAll('.history-dropdown-menu').forEach(dropdown => {
+        document.querySelectorAll('[data-dropdown="true"]').forEach(dropdown => {
             dropdown.classList.add('hidden');
         });
     }
 
     handleNewConversation() {
-        // For demo purposes, just log the action
+        // TODO: Reset chat state and navigate to new session ID
         console.log('New conversation requested');
-        
-        // In a real app, this would:
-        // 1. Clear the current chat
-        // 2. Reset the conversation state
-        // 3. Optionally redirect to a new conversation page
-        
+
         // Visual feedback
         const chatWindow = document.getElementById('chat-window');
         if (chatWindow) {
@@ -187,19 +196,20 @@ class HistoryPanel {
 
     handleSearch(query) {
         const normalizedQuery = query.toLowerCase().trim();
-        const items = this.elements.historyList?.querySelectorAll('.history-item');
-        const groups = this.elements.historyList?.querySelectorAll('.history-group');
+        const items = this.elements.historyList?.querySelectorAll('[data-conversation-id]');
+        const groups = this.elements.historyList?.querySelectorAll('[data-conversation-group]');
 
         items?.forEach(item => {
-            const title = item.querySelector('.history-item-title')?.textContent.toLowerCase() || '';
-            const preview = item.querySelector('.history-item-preview')?.textContent.toLowerCase() || '';
-            const matches = title.includes(normalizedQuery) || preview.includes(normalizedQuery);
+            // Use semantic selector for title
+            const titleEl = item.querySelector('[data-conversation-title]');
+            const title = titleEl?.textContent.toLowerCase() || '';
+            const matches = title.includes(normalizedQuery);
             item.style.display = matches ? '' : 'none';
         });
 
         // Hide empty groups
         groups?.forEach(group => {
-            const visibleItems = group.querySelectorAll('.history-item:not([style*="display: none"])');
+            const visibleItems = group.querySelectorAll('[data-conversation-id]:not([style*="display: none"])');
             group.style.display = visibleItems.length > 0 ? '' : 'none';
         });
     }
@@ -208,15 +218,17 @@ class HistoryPanel {
         const conversationId = item.dataset.conversationId;
         console.log('Selected conversation:', conversationId);
 
-        // Update active state
-        this.elements.historyList?.querySelectorAll('.history-item').forEach(i => {
-            i.classList.remove('active');
+        // Update active state using data attribute (single source of truth)
+        this.elements.historyList?.querySelectorAll('[data-conversation-id]').forEach(i => {
+            i.dataset.active = 'false';
         });
-        item.classList.add('active');
 
-        // In a real app, this would load the conversation
-        // For demo, just show a message
-        const title = item.querySelector('.history-item-title')?.textContent;
+        // Set selected as active
+        item.dataset.active = 'true';
+
+        // TODO: Fetch and load conversation history from API
+        const titleEl = item.querySelector('[data-conversation-title]');
+        const title = titleEl?.textContent;
         if (title) {
             console.log(`Loading conversation: ${title}`);
         }
@@ -229,13 +241,13 @@ class HistoryPanel {
 
     handleDeleteConversation(conversationId, item) {
         console.log('Delete conversation:', conversationId);
-        
+
         // Animate removal
         if (item) {
-            item.style.transition = 'all 0.2s ease';
+            item.style.transition = `all 200ms ease`;
             item.style.opacity = '0';
             item.style.transform = 'translateX(-10px)';
-            
+
             setTimeout(() => {
                 item.remove();
             }, 200);
@@ -244,13 +256,13 @@ class HistoryPanel {
 
     handleRenameConversation(conversationId, item) {
         console.log('Rename conversation:', conversationId);
-        
-        const titleEl = item?.querySelector('.history-item-title');
+
+        const titleEl = item?.querySelector('[data-conversation-title]');
         if (!titleEl) return;
 
         const currentTitle = titleEl.textContent;
         const newTitle = prompt('Nuevo nombre:', currentTitle);
-        
+
         if (newTitle && newTitle.trim() !== currentTitle) {
             titleEl.textContent = newTitle.trim();
         }
@@ -258,13 +270,13 @@ class HistoryPanel {
 
     handleShareConversation(conversationId) {
         console.log('Share conversation:', conversationId);
-        // In a real app, this would open a share dialog or copy a link
+        // TODO: Implement share dialog modal
         alert('Funcionalidad de compartir próximamente disponible');
     }
 
     handleSettings() {
         console.log('Settings requested');
-        // In a real app, this would open a settings modal or page
+        // TODO: Connect to global settings panel
         alert('Configuración próximamente disponible');
     }
 }

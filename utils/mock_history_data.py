@@ -1,22 +1,5 @@
 """Mock data for development and testing."""
 
-# =============================================================================
-# MOCK DATA - ESTRUCTURA PARA PRODUCCIÓN
-# =============================================================================
-# En producción, cada conversación viene de SQLite (conversations.db)
-# con la siguiente estructura:
-#
-# {
-#     "id": str,              # UUID único de la conversación
-#     "title": str,           # Título de la conversación (max ~50 chars para UI)
-#     "created_at": str,      # ISO 8601 timestamp: "2026-01-06T14:30:00"
-#     "updated_at": str,      # ISO 8601 timestamp de última actualización
-# }
-#
-# El agrupamiento por fecha (HOY, AYER, ÚLTIMOS 7 DÍAS, etc.) se calcula
-# en conversation_service.py comparando 'created_at' con datetime.now()
-# =============================================================================
-
 MOCK_CONVERSATIONS = {
     "HOY": [
         {

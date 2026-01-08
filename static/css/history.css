@@ -1,422 +1,17 @@
-/* History Panel Styles - Sidebar minimalista */
+/* History Panel Styles - Minimal CSS with AirDragon/Tailwind */
 
-/* Usa las variables de chat.css */
 :root {
-    --sidebar-width: 380px;
-    --sidebar-collapsed-width: 52px;
-    --sidebar-bg: var(--background-fill-secondary, #f8f9fa);
-    --sidebar-border: var(--border-color-primary, #dee2e6);
-    --sidebar-text: var(--body-text-color, #333333);
-    --sidebar-text-muted: var(--body-text-color-subdued, #6c757d);
-    --sidebar-hover: var(--border-color-accent, #e9ecef);
-    --sidebar-active: var(--color-accent, #667eea);
-    --sidebar-transition: 0.25s ease;
+    --header-height: 76px;
 }
 
-/* === LAYOUT PRINCIPAL === */
+/* Main layout */
 .app-layout {
     display: flex;
-    height: calc(100vh - 76px); /* Resta altura del header principal */
+    height: calc(100vh - var(--header-height));
     overflow: hidden;
 }
 
-/* === SIDEBAR CONTENEDOR (FUSIÓN) === */
-.sidebar {
-    width: var(--sidebar-collapsed-width);
-    min-width: var(--sidebar-collapsed-width);
-    height: 100%;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--sidebar-border);
-    transition: width var(--sidebar-transition), min-width var(--sidebar-transition);
-    overflow: hidden;
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar.expanded {
-    width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-}
-
-/* Contenedor interno para estructura Flex Vertical */
-.sidebar-inner-col {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-}
-
-/* === HEADER Y TOGGLE === */
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    padding: 12px 0 0 8px; /* Centrado visualmente con la columna de iconos colapsada */
-    height: 48px;
-    flex-shrink: 0;
-}
-
-/* Botones de icono estándar */
-.sidebar-icon-btn {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    border-radius: 50%; /* Circular para iconos puros */
-    color: var(--sidebar-text-muted);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    flex-shrink: 0; /* No encoger */
-}
-
-.sidebar-icon-btn:hover {
-    background: var(--sidebar-hover);
-    color: var(--sidebar-text);
-}
-
-.sidebar-icon-btn svg {
-    width: 20px;
-    height: 20px;
-}
-
-/* === BOTÓN NUEVA CONVERSACIÓN (TRANSFORMABLE) === */
-.sidebar-actions {
-    padding: 16px 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Alineado a la izquierda */
-    flex-shrink: 0;
-}
-
-.new-chat-btn {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    border: none;
-    color: var(--sidebar-text);
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    overflow: hidden;
-    
-    /* Estado Colapsado (Default) */
-    width: 36px;
-    height: 36px;
-    justify-content: center;
-    background: transparent;
-    border-radius: 50%;
-    color: var(--sidebar-text-muted);
-}
-
-.new-chat-btn svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px; /* Prevenir aplastamiento */
-}
-
-.new-chat-btn:hover {
-    background: var(--sidebar-hover);
-}
-
-/* Estado Expandido - Botón estilo 'Pill' */
-.sidebar.expanded .new-chat-btn {
-    width: 100%;
-    height: 44px;
-    justify-content: flex-start;
-    padding: 0 16px;
-    border-radius: 8px; /* Square pero suave */
-    background: var(--sidebar-hover); /* Fondo gris suave */
-    color: var(--sidebar-text);
-}
-
-.sidebar.expanded .new-chat-btn:hover {
-    background: #e2e6ea; /* Un poco más oscuro */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* Texto de etiquetas (oculto en colapsado) */
-.sidebar-label {
-    opacity: 0;
-    width: 0;
-    margin-left: 0;
-    display: none;
-    transition: opacity 0.2s ease;
-}
-
-.sidebar.expanded .sidebar-label {
-    display: inline-block;
-    opacity: 1;
-    width: auto;
-    margin-left: 12px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-/* === CONTENIDO PRINCIPAL (LISTA E HISTORIAL) === */
-.sidebar-main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Ocultar scrollbars cuando colapsado */
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s;
-    padding: 0 12px;
-}
-
-/* Solo visible cuando expandido */
-.sidebar.expanded .sidebar-main-content {
-    opacity: 1;
-    visibility: visible;
-    transition-delay: 0.1s; /* Esperar un poco a que abra */
-}
-
-/* Header de "Recientes" */
-.history-section-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--sidebar-text);
-    margin: 16px 4px 8px 4px;
-}
-
-/* Area de scroll */
-.history-scroll-area {
-    flex: 1;
-    overflow-y: auto;
-    padding-right: 4px; /* Espacio para scrollbar */
-}
-
-/* === FOOTER === */
-.sidebar-footer {
-    margin-top: auto;
-    padding: 12px 8px;
-    flex-shrink: 0;
-    border-top: 1px solid transparent; /* Opcional divider */
-}
-
-/* Botones footer que se expanden */
-.sidebar-footer-btn {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    color: var(--sidebar-text-muted);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.sidebar-footer-btn svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-}
-
-.sidebar.expanded .sidebar-footer-btn {
-    width: 100%;
-    justify-content: flex-start;
-    padding: 0 12px;
-    border-radius: 6px;
-}
-
-.sidebar-footer-btn:hover {
-    background: var(--sidebar-hover);
-    color: var(--sidebar-text);
-}
-
-/* === ESTILOS ANTERIORES PRESERVADOS (ITEMS, SCROLLBARS) === */
-/* ... (Search input styling) */
-/* === ESTILOS DEL MENU DE 3 PUNTOS === */
-.history-item-actions-container {
-    position: relative;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.history-item:hover .history-item-actions-container {
-    opacity: 1;
-}
-
-/* Botón trigger (3 puntos) */
-.history-menu-trigger {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--sidebar-text-muted);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s ease, color 0.15s ease;
-}
-
-.history-menu-trigger:hover {
-    background: var(--sidebar-hover);
-    color: var(--sidebar-text);
-}
-
-.history-menu-trigger svg {
-    width: 18px;
-    height: 18px;
-}
-
-/* Dropdown Menu (Popover) */
-.history-dropdown-menu {
-    position: absolute;
-    right: 0;
-    top: 32px; /* Justo debajo del trigger */
-    background: var(--background-fill-primary);
-    border: 1px solid var(--sidebar-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 4px;
-    z-index: 100;
-    min-width: 140px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.history-dropdown-menu.hidden {
-    display: none;
-}
-
-/* Items del menu */
-.history-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 8px 12px;
-    text-align: left;
-    background: transparent;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    color: var(--sidebar-text);
-    cursor: pointer;
-    transition: background 0.15s ease;
-}
-
-.history-menu-item:hover {
-    background: var(--sidebar-hover);
-}
-
-.history-menu-item.delete {
-    color: #ef4444; /* Red color manually just in case var is missing */
-}
-
-.history-menu-item.delete:hover {
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-/* Iconos dentro del menu */
-.menu-item-icon svg {
-    width: 16px;
-    height: 16px;
-    opacity: 0.7;
-}
-
-/* Ajustar el espadiado de items del historial ("Breathing room") */
-.history-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 10px 12px; /* Aumentado padding vertical */
-    margin-bottom: 2px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background 0.15s ease;
-    position: relative;
-}
-
-/* Asegurar que el título no se solape con el menú */
-.history-item-content {
-    flex: 1;
-    min-width: 0; /* Text truncation fix */
-    margin-right: 8px;
-}
-
-/* === RESTO DE ESTILOS === */
-.history-search-container {
-    margin-bottom: 8px;
-}
-
-.history-search-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--sidebar-border);
-    border-radius: 8px; /* Square pero suave */
-    background: var(--background-fill-primary);
-    font-size: 0.9rem;
-}
-/* === GRUPOS POR FECHA === */
-.history-group {
-    margin-bottom: 8px;
-}
-
-.history-group:empty {
-    display: none;
-}
-
-.history-group-title {
-    padding: 8px 8px 4px;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    color: var(--sidebar-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-/* === ITEMS DE CONVERSACIÓN === */
-.history-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: var(--radius-md, 6px);
-    cursor: pointer;
-    transition: background 0.15s;
-    margin-bottom: 2px;
-}
-
-.history-item:hover {
-    background: var(--sidebar-hover);
-}
-
-.history-item.active {
-    background: var(--sidebar-hover);
-    border-left: 3px solid var(--sidebar-active);
-    padding-left: 7px;
-}
-
-.history-item-content {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.history-item-title {
-    font-size: 0.8125rem;
-    font-weight: 500;
-    color: var(--sidebar-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* === CONTENIDO PRINCIPAL === */
+/* Main content area */
 .main-content {
     flex: 1;
     display: flex;
@@ -425,126 +20,44 @@
     background: #f5f5f5;
 }
 
-/* Ajuste del chat-container dentro del layout */
-.main-content .chat-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem;
-    width: 100%;
+/* Smooth scrollbar styling */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
 }
 
-/* === ESTADOS VACÍOS === */
-.history-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 16px;
-    text-align: center;
-    color: var(--sidebar-text-muted);
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-.history-empty-text {
-    font-size: 0.8125rem;
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
 }
 
-.history-no-results {
-    padding: 16px;
-    text-align: center;
-    color: var(--sidebar-text-muted);
-    font-size: 0.8125rem;
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        top: 76px;
-        left: 0;
-        height: calc(100vh - 76px);
-        transform: translateX(calc(-1 * var(--sidebar-width)));
-        width: var(--sidebar-width);
-        min-width: var(--sidebar-width);
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        z-index: 100;
-    }
-    
-    .sidebar.expanded {
-        transform: translateX(0);
-    }
-    
-    .sidebar-icons {
-        display: none;
-    }
-    
-    .sidebar.expanded .history-panel {
-        width: 100%;
-    }
-    
-    /* Botón flotante móvil */
-    .mobile-toggle {
-        display: flex;
-    }
-    
-    .main-content {
-        width: 100%;
-    }
-    
-    /* Overlay móvil */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        top: 76px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.3);
-        z-index: 99;
-    }
-    
-    .sidebar-overlay.visible {
-        display: block;
-    }
-}
-
-/* Botón flotante móvil (oculto en desktop) */
-.mobile-toggle {
-    display: none;
-    position: fixed;
-    top: 88px;
-    left: 12px;
-    width: 40px;
-    height: 40px;
-    background: var(--background-fill-primary);
-    border: 1px solid var(--sidebar-border);
-    border-radius: var(--radius-md, 6px);
-    color: var(--sidebar-text);
-    cursor: pointer;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 98;
-}
-
-.mobile-toggle:hover {
-    background: var(--sidebar-hover);
-}
-
-@media (max-width: 768px) {
-    .mobile-toggle {
-        display: flex;
-    }
-}
-
-/* === ANIMACIONES === */
+/* Fade in animation for conversation items */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.history-item {
-    animation: fadeIn 0.15s ease-out;
+[data-conversation-id] {
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Responsive - Mobile overlay visibility */
+@media (max-width: 768px) {
+    #sidebar-overlay.visible {
+        display: block !important;
+    }
 }
