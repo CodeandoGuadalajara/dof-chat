@@ -4,7 +4,7 @@ from typing import List, Tuple
 from datetime import datetime, timezone
 from sqlmodel import select
 from models import Chunk, Document
-from database import get_async_session_context
+from database import get_readonly_session_context
 from config import settings
 from utils.logger import logger
 
@@ -34,9 +34,9 @@ class VectorService:
         logger.info(f"Starting vector search in database for top_k={top_k}")
             
         try:
-            # Use async context manager for safe session management
-            logger.debug("Obtaining database session from airsqlmodel")
-            async with get_async_session_context() as session:
+            # Use read-only session with AUTOCOMMIT to avoid transaction overhead
+            logger.debug("Obtaining read-only database session (AUTOCOMMIT)")
+            async with get_readonly_session_context() as session:
                 logger.debug("Database session acquired successfully")
                 
                 # Vector search using cosine distance
@@ -44,13 +44,13 @@ class VectorService:
                 logger.debug("Building vector similarity query with pgvector")
                 statement = (
                     select(Chunk, Document)
-                    .join(Document)
+                    .join(Document, Document.id == Chunk.document_id)
                     .order_by(Chunk.embedding.cosine_distance(embedding))
                     .limit(top_k)
                 )
                 
                 logger.info("Executing vector similarity search query on PostgreSQL")
-                results = await session.exec(statement)
+                results = await session.execute(statement)
                 rows = results.all()
                 logger.info(f"Database returned {len(rows)} matching chunks")
                 

@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Application settings using Pydantic Settings."""
     
     # Database configuration
-    database_url: str = "postgresql+asyncpg://user:password@localhost:5432/dbname"    
+    database_url: str = "postgresql+asyncpg://CHANGE_ME:CHANGE_ME@localhost:5432/CHANGE_ME"    
     
     # Gemini API configuration
     # TODO: Enable API key validation for production deployment

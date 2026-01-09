@@ -1,44 +1,81 @@
-"""Database connection utilities using AirSQLModel."""
+"""Database connection utilities for read-only operations with AUTOCOMMIT."""
 
-import os
-from contextlib import asynccontextmanager, aclosing
-import airsqlmodel as sql
+from contextlib import asynccontextmanager
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 from config import settings
 
-# Ensure DATABASE_URL is set for airsqlmodel
-if not os.environ.get("DATABASE_URL"):
-    os.environ["DATABASE_URL"] = settings.database_url
+
+# Lazy-initialized read-only engine and session factory
+_read_engine = None
+_read_session_factory = None
+
+
+def _get_read_session_factory():
+    """Get or create the read-only session factory with AUTOCOMMIT isolation."""
+    global _read_engine, _read_session_factory
+    if _read_session_factory is None:
+        # Create engine directly with AUTOCOMMIT to eliminate transaction overhead
+        _read_engine = create_async_engine(
+            url=settings.database_url,
+            echo=False,  # Set to True for SQL query logging
+            pool_pre_ping=True,  # Verify connections before using
+            pool_size=5,  # Connection pool size
+            max_overflow=10  # Max overflow connections
+        ).execution_options(isolation_level="AUTOCOMMIT")
+        
+        _read_session_factory = sessionmaker(
+            bind=_read_engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+    return _read_session_factory
+
 
 @asynccontextmanager
-async def get_async_session_context():
+async def get_readonly_session_context():
     """
-    Provide an asynchronous database session as an async context manager.
+    Provide a read-only async database session with AUTOCOMMIT isolation.
     
-    This function wraps the airsqlmodel async generator using `aclosing` 
-    to ensure the session is properly closed even if exceptions occur, 
-    preventing context leakage or masked errors.
+    Uses AUTOCOMMIT to eliminate transaction overhead (no BEGIN/COMMIT/ROLLBACK)
+    for read-only SELECT operations. More efficient for read-heavy workloads.
+    
+    WARNING: Only for read operations. Do NOT use for INSERT/UPDATE/DELETE.
     
     Usage:
-        async with get_async_session_context() as session:
-            result = await session.exec(statement)
+        async with get_readonly_session_context() as session:
+            result = await session.execute(select(Model))
             
     Yields:
-        AsyncSession: A managed SQLAlchemy async session.
+        AsyncSession: Read-only session with AUTOCOMMIT isolation.
     """
-    # Use aclosing to ensure the generator's aclose() is called upon exit
-    async with aclosing(sql.get_async_session()) as session_gen:
-        try:
-            # Advance the generator to obtain the session instance
-            session = await anext(session_gen)
-        except StopAsyncIteration:
-            raise RuntimeError("Database generator failed to yield a session.") from None
-        
+    session_factory = _get_read_session_factory()
+    async with session_factory() as session:
         try:
             yield session
-        except Exception:
-            # Exceptions are re-raised so they can be handled by the caller or middleware.
-            # 'aclosing' handles the generator cleanup without suppressing this exception.
-            raise
+        finally:
+            await session.close()
 
-# Re-export dependency for FastAPI routes
-async_session_dependency = sql.async_session_dependency
+
+@asynccontextmanager
+async def readonly_db_lifespan(app):
+    """
+    Lifespan context manager for read-only database engine with AUTOCOMMIT.
+    
+    Manages the lifecycle of the read-only async database engine:
+    - Initializes the engine on startup
+    - Properly disposes of the engine on shutdown
+    
+    Usage:
+        app = air.Air(lifespan=readonly_db_lifespan)
+    
+    Args:
+        app: The FastAPI/Air application instance
+    """
+    # Initialize the engine on startup
+    _get_read_session_factory()
+    yield
+    # Dispose of the engine on shutdown
+    global _read_engine
+    if _read_engine is not None:
+        await _read_engine.dispose()
