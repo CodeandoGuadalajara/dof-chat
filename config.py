@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     """Application settings using Pydantic Settings."""
     
     # Database configuration
-    database_path: str = "dof_db/db.duckdb"
+    database_url: str = "postgresql+asyncpg://CHANGE_ME:CHANGE_ME@localhost:5432/CHANGE_ME"    
     
     # Gemini API configuration
     # TODO: Enable API key validation for production deployment
@@ -46,10 +46,17 @@ class Settings(BaseSettings):
     # RAG configuration
     max_chunks: int = 5
     
+    # Mock mode configuration
+    force_mock_mode: bool = False  # Enable mock responses only when explicitly configured
+    
     # Application configuration
     app_name: str = "DOF Chat"
     debug: bool = True
     session_secret_key: str = "change-me-in-production"
+    
+    # Clerk authentication configuration
+    clerk_publishable_key: str = ""
+    clerk_secret_key: str = ""
     
     class Config:
         env_file = ".env"

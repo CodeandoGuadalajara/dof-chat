@@ -2,6 +2,7 @@
 
 # Load environment variables first to ensure AirClerk finds them
 from dotenv import load_dotenv
+
 load_dotenv()
 
 import air
@@ -10,9 +11,10 @@ from fastapi import FastAPI
 from routers import web, api
 from utils.logger import logger
 from config import settings
+from database import readonly_db_lifespan
 
-# Initialize Air application for web routes
-app = air.Air()
+# Initialize Air application with read-only database lifespan
+app = air.Air(lifespan=readonly_db_lifespan)
 
 # Create a separate FastAPI app for API routes to ensure proper JSON serialization
 fastapi_app = FastAPI()

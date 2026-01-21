@@ -26,9 +26,9 @@ class ChunkData(BaseModel):
         default="",
         description="Section header or title for the fragment"
     )
-    doc_type: str = Field(
-        default="DOCUMENTO",
-        description="Type of document (LEY, REGLAMENTO, NORMA, etc.)"
+    document_id: Optional[int] = Field(
+        default=None,
+        description="ID of the source document for this chunk (optional)"
     )
 
 

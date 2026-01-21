@@ -78,13 +78,14 @@ class RAGService:
         
         # Generate mock embedding for integration testing
         logger.debug(f"Processing embedding for text: '{text[:50]}...'")
-        logger.info("MOCK: Generating fixed embedding vector")
+        logger.info("MOCK: Generating deterministic embedding vector based on text hash")
         
-        # Fixed mock embedding - results will be pseudo-random since DB has real embeddings
-        random.seed(42)
+        # Use text hash as seed for deterministic but query-specific embeddings
+        text_hash = hash(text)
+        random.seed(text_hash)
         mock_embedding = [random.uniform(-0.1, 0.1) for _ in range(settings.embedding_dimension)]
         
-        logger.debug(f"Generated mock embedding with {len(mock_embedding)} dimensions")
+        logger.debug(f"Generated mock embedding with {len(mock_embedding)} dimensions (hash: {text_hash})")
         return mock_embedding
     
     async def search_chunks(self, embedding: List[float], top_k: int = None) -> Tuple[List[ChunkData], List[Document]]:
