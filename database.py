@@ -1,117 +1,81 @@
-"""Database connection utilities for DuckDB vector database."""
+"""Database connection utilities for read-only operations with AUTOCOMMIT."""
 
-import duckdb
-from typing import List, Dict, Any
-import os
+from contextlib import asynccontextmanager
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 from config import settings
-from utils.logger import logger
 
 
-class DatabaseManager:
-    """Manages DuckDB connection and basic operations."""
+# Lazy-initialized read-only engine and session factory
+_read_engine = None
+_read_session_factory = None
+
+
+def _get_read_session_factory():
+    """Get or create the read-only session factory with AUTOCOMMIT isolation."""
+    global _read_engine, _read_session_factory
+    if _read_session_factory is None:
+        # Create engine directly with AUTOCOMMIT to eliminate transaction overhead
+        _read_engine = create_async_engine(
+            url=settings.database_url,
+            echo=False,  # Set to True for SQL query logging
+            pool_pre_ping=True,  # Verify connections before using
+            pool_size=5,  # Connection pool size
+            max_overflow=10  # Max overflow connections
+        ).execution_options(isolation_level="AUTOCOMMIT")
+        
+        _read_session_factory = sessionmaker(
+            bind=_read_engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+    return _read_session_factory
+
+
+@asynccontextmanager
+async def get_readonly_session_context():
+    """
+    Provide a read-only async database session with AUTOCOMMIT isolation.
     
-    def __init__(self, db_path: str = None):
-        """Initialize database manager.
-        
-        Args:
-            db_path: Path to DuckDB database file
-        """
-        self.db_path = db_path or settings.database_path
-        self._connection = None
+    Uses AUTOCOMMIT to eliminate transaction overhead (no BEGIN/COMMIT/ROLLBACK)
+    for read-only SELECT operations. More efficient for read-heavy workloads.
     
-    def connect(self) -> duckdb.DuckDBPyConnection:
-        """Establish connection to DuckDB database with validation.
-        
-        Returns:
-            DuckDB connection object
-        """
-        if not os.path.exists(self.db_path):
-            logger.error(f"Database file not found: {self.db_path}")
-            raise FileNotFoundError(f"Database file not found: {self.db_path}")
-        
-        # Check if connection exists and is still valid
-        if self._connection is not None:
-            try:
-                # Test connection validity with a simple query
-                result = self._connection.execute("SELECT 1").fetchone()
-                if result != (1,):
-                    raise Exception("Database connection validation failed: unexpected result")
-            except Exception as e:
-                logger.warning(f"Existing connection failed validation, reconnecting: {e}")
-                self._connection = None
-        
-        if self._connection is None:
-            logger.info(f"Connecting to database: {self.db_path}")
-            self._connection = duckdb.connect(self.db_path, read_only=True)
-        
-        return self._connection
+    WARNING: Only for read operations. Do NOT use for INSERT/UPDATE/DELETE.
     
-    def execute_query(self, query: str, params: List[Any] = None) -> List[Dict[str, Any]]:
-        """Execute a query and return results.
-        
-        Args:
-            query: SQL query string
-            params: Query parameters
+    Usage:
+        async with get_readonly_session_context() as session:
+            result = await session.execute(select(Model))
             
-        Returns:
-            List of dictionaries with query results
-        """
-        # TODO: Add vector similarity search methods for querying embeddings
-        # TODO: Implement methods to retrieve chunks based on similarity
-        
-        conn = self.connect()
-        
+    Yields:
+        AsyncSession: Read-only session with AUTOCOMMIT isolation.
+    """
+    session_factory = _get_read_session_factory()
+    async with session_factory() as session:
         try:
-            if params:
-                result = conn.execute(query, params).fetchall()
-            else:
-                result = conn.execute(query).fetchall()
-            
-            # Get column names
-            columns = [desc[0] for desc in conn.description]
-            
-            # Convert to list of dictionaries
-            result_dicts = [dict(zip(columns, row)) for row in result]
-            
-            return result_dicts
-            
-        except Exception as e:
-            logger.error(f"Query execution failed: {e}")
-            raise
-    
-    def close(self):
-        """Close database connection."""
-        if self._connection:
-            self._connection.close()
-            self._connection = None
-    
-    def test_connection(self) -> Dict[str, Any]:
-        """Test database connection for RAG service initialization.
-        
-        Returns:
-            Dictionary with connection test results
-        """
-        # TODO: Add schema validation for existing vector tables
-        # TODO: Verify embedding columns exist and data is available
-        
-        try:
-            self.connect()
-            
-            result = {
-                "status": "success",
-                "db_path": self.db_path
-            }
-            
-            logger.info("Database connection test successful")
-            return result
-            
-        except Exception as e:
-            logger.error(f"Database connection test failed: {e}")
-            return {
-                "status": "error",
-                "error": str(e)
-            }
+            yield session
+        finally:
+            await session.close()
 
 
-# Global database manager instance
-db_manager = DatabaseManager()
+@asynccontextmanager
+async def readonly_db_lifespan(app):
+    """
+    Lifespan context manager for read-only database engine with AUTOCOMMIT.
+    
+    Manages the lifecycle of the read-only async database engine:
+    - Initializes the engine on startup
+    - Properly disposes of the engine on shutdown
+    
+    Usage:
+        app = air.Air(lifespan=readonly_db_lifespan)
+    
+    Args:
+        app: The FastAPI/Air application instance
+    """
+    # Initialize the engine on startup
+    _get_read_session_factory()
+    yield
+    # Dispose of the engine on shutdown
+    global _read_engine
+    if _read_engine is not None:
+        await _read_engine.dispose()
