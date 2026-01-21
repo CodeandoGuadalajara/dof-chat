@@ -169,7 +169,7 @@ class ConversationCard:
         return air.Aside(
             # Inner column container
             air.Div(
-                # Header with toggle button
+                # Header with toggle and search buttons
                 air.Div(
                     ad.Button(
                         air.Raw(_icon("menu", 20)),
@@ -179,7 +179,15 @@ class ConversationCard:
                         type="button",
                         **{"aria-label": "Alternar barra lateral"}
                     ),
-                    class_="flex items-center justify-center w-[52px] py-3 h-12 shrink-0"
+                    ad.Button(
+                        air.Raw(_icon("search", 20)),
+                        modifier=ad.ButtonMods.ghost,
+                        class_="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors group-data-[state=collapsed]/sidebar:hidden",
+                        id="search-trigger",
+                        type="button",
+                        **{"aria-label": "Buscar conversaciones"}
+                    ),
+                    class_="flex items-center justify-between px-2 py-3 h-12 shrink-0 group-data-[state=collapsed]/sidebar:justify-center group-data-[state=collapsed]/sidebar:w-[52px]"
                 ),
                 
                 # Actions section (New conversation button)
@@ -208,18 +216,6 @@ class ConversationCard:
                 
                 # Main content area (only visible when expanded)
                 air.Div(
-                    # Search input
-                    air.Div(
-                        air.Input(
-                            type="search",
-                            placeholder="Buscar...",
-                            class_="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:border-indigo-500",
-                            id="history-search",
-                            **{"aria-label": "Buscar conversaciones"}
-                        ),
-                        class_="px-4 mb-2"
-                    ),
-                    
                     # Section title
                     air.Div(
                         "Recientes",
@@ -295,4 +291,92 @@ class ConversationCard:
         return air.Div(
             class_="fixed inset-0 bg-black bg-opacity-30 z-40 hidden",
             id="sidebar-overlay"
+        )
+    @staticmethod
+    def create_search_view(conversations: Optional[dict] = None) -> air.Div:
+        """Create the inline search view that replaces chat area (Gemini-style).
+        
+        Args:
+            conversations: Dict of date groups with conversation lists
+            
+        Returns:
+            Air Div component for the search view
+        """
+        if conversations is None:
+            conversations = MOCK_CONVERSATIONS
+        
+        # Build flat list of all conversations
+        all_conversations = []
+        for group_title, convs in conversations.items():
+            for conv in convs:
+                all_conversations.append({
+                    **conv,
+                    "group": group_title
+                })
+        
+        # Create result items with improved styling
+        result_items = []
+        for conv in all_conversations:
+            result_items.append(
+                air.Div(
+                    air.Div(
+                        air.Span(
+                            conv["title"],
+                            class_="text-base text-gray-800 font-medium truncate",
+                            **{"data-search-title": "true"}
+                        ),
+                        class_="flex-1 min-w-0"
+                    ),
+                    air.Span(
+                        conv["group"],
+                        class_="text-xs text-gray-400 ml-6 whitespace-nowrap uppercase tracking-wide"
+                    ),
+                    class_="flex items-center justify-between px-5 py-4 hover:bg-indigo-50 cursor-pointer rounded-xl transition-all duration-200 border border-transparent hover:border-indigo-100",
+                    **{"data-conversation-id": conv["id"], "data-search-result": "true"}
+                )
+            )
+        
+        return air.Div(
+            # Centered content wrapper
+            air.Div(
+                # Header with nice spacing
+                air.H1(
+                    "Buscar",
+                    class_="text-3xl font-bold text-gray-900 mb-8"
+                ),
+                
+                # Search input (pill style, compact)
+                air.Div(
+                    air.Div(
+                        air.Raw(_icon("search", 18)),
+                        class_="text-gray-400"
+                    ),
+                    air.Input(
+                        type="search",
+                        placeholder="Buscar chats...",
+                        class_="flex-1 ml-3 text-base bg-transparent border-none outline-none placeholder-gray-400 text-gray-700",
+                        id="search-input",
+                        **{"aria-label": "Buscar conversaciones", "autocomplete": "off"}
+                    ),
+                    class_="flex items-center px-4 py-2.5 bg-gray-50 rounded-full border border-gray-200 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 transition-all duration-200"
+                ),
+                
+                # Section title with spacing
+                air.Div(
+                    "Recientes",
+                    class_="text-sm font-semibold text-gray-500 uppercase tracking-wider mt-10 mb-4 px-2"
+                ),
+                
+                # Results list with gap
+                air.Div(
+                    *result_items,
+                    class_="flex flex-col gap-1",
+                    id="search-results"
+                ),
+                
+                class_="w-full max-w-2xl mx-auto"
+            ),
+            
+            class_="flex-1 flex flex-col items-center pt-16 px-8 pb-8 bg-white overflow-auto hidden",
+            id="search-view"
         )

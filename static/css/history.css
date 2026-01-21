@@ -61,3 +61,8 @@
         display: block !important;
     }
 }
+
+/* Hide results that don't match search */
+[data-search-result][data-hidden="true"] {
+    display: none;
+}

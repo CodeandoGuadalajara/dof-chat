@@ -65,6 +65,7 @@ class ConversationNewPage:
                     
                     # Main content area
                     air.Main(
+                        # Chat container (visible by default)
                         air.Div(
                             # Chat window
                             Card.create(
@@ -104,8 +105,13 @@ class ConversationNewPage:
                                 class_="input-container"
                             ),
                             
-                            class_="chat-container"
+                            class_="chat-container",
+                            id="chat-container"
                         ),
+                        
+                        # Search view (hidden by default, replaces chat)
+                        ConversationCard.create_search_view(),
+                        
                         class_="main-content"
                     ),
                     

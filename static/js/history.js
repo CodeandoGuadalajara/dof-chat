@@ -11,13 +11,19 @@ class HistoryPanel {
             mobileToggle: document.getElementById('mobile-sidebar-toggle'),
             overlay: document.getElementById('sidebar-overlay'),
             newChatBtn: document.getElementById('new-chat-btn'),
-            searchInput: document.getElementById('history-search'),
             historyList: document.getElementById('history-list'),
-            settingsBtn: document.getElementById('settings-btn')
+            settingsBtn: document.getElementById('settings-btn'),
+            // Search view elements (inline, replaces chat)
+            searchTrigger: document.getElementById('search-trigger'),
+            searchView: document.getElementById('search-view'),
+            searchInput: document.getElementById('search-input'),
+            searchResults: document.getElementById('search-results'),
+            chatContainer: document.getElementById('chat-container')
         };
 
         this.initializeEventListeners();
         this.initializeDropdownMenus();
+        this.initializeSearchView();
     }
 
     initializeEventListeners() {
@@ -46,13 +52,6 @@ class HistoryPanel {
         if (this.elements.newChatBtn) {
             this.elements.newChatBtn.addEventListener('click', () => {
                 this.handleNewConversation();
-            });
-        }
-
-        // Search input
-        if (this.elements.searchInput) {
-            this.elements.searchInput.addEventListener('input', (e) => {
-                this.handleSearch(e.target.value);
             });
         }
 
@@ -86,9 +85,18 @@ class HistoryPanel {
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            // Escape to close sidebar on mobile
-            if (e.key === 'Escape' && this.isMobile() && this.isSidebarExpanded()) {
-                this.closeSidebar();
+            // Escape to close search view or sidebar on mobile
+            if (e.key === 'Escape') {
+                if (this.isSearchViewOpen()) {
+                    this.closeSearchView();
+                } else if (this.isMobile() && this.isSidebarExpanded()) {
+                    this.closeSidebar();
+                }
+            }
+            // Ctrl+K to open search view
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                this.toggleSearchView();
             }
         });
     }
@@ -137,6 +145,92 @@ class HistoryPanel {
 
             this.closeAllDropdowns();
         });
+    }
+
+    initializeSearchView() {
+        // Open search view on trigger click
+        if (this.elements.searchTrigger) {
+            this.elements.searchTrigger.addEventListener('click', () => {
+                this.toggleSearchView();
+            });
+        }
+
+        // Search input filtering
+        if (this.elements.searchInput) {
+            this.elements.searchInput.addEventListener('input', (e) => {
+                this.handleSearch(e.target.value);
+            });
+        }
+
+        // Result click handling
+        if (this.elements.searchResults) {
+            this.elements.searchResults.addEventListener('click', (e) => {
+                const result = e.target.closest('[data-search-result]');
+                if (result) {
+                    const conversationId = result.dataset.conversationId;
+                    this.handleSearchResultClick(conversationId);
+                }
+            });
+        }
+    }
+
+    openSearchView() {
+        if (!this.elements.searchView || !this.elements.chatContainer) return;
+        this.elements.chatContainer.classList.add('hidden');
+        this.elements.searchView.classList.remove('hidden');
+        // Focus input
+        setTimeout(() => {
+            this.elements.searchInput?.focus();
+        }, 50);
+    }
+
+    closeSearchView() {
+        if (!this.elements.searchView || !this.elements.chatContainer) return;
+        this.elements.searchView.classList.add('hidden');
+        this.elements.chatContainer.classList.remove('hidden');
+        // Clear search input
+        if (this.elements.searchInput) {
+            this.elements.searchInput.value = '';
+            this.handleSearch('');
+        }
+    }
+
+    toggleSearchView() {
+        if (this.isSearchViewOpen()) {
+            this.closeSearchView();
+        } else {
+            this.openSearchView();
+        }
+    }
+
+    isSearchViewOpen() {
+        return this.elements.searchView && !this.elements.searchView.classList.contains('hidden');
+    }
+
+    handleSearch(query) {
+        const normalizedQuery = query.toLowerCase().trim();
+        const results = this.elements.searchResults?.querySelectorAll('[data-search-result]');
+
+        results?.forEach(result => {
+            const titleEl = result.querySelector('[data-search-title]');
+            const title = titleEl?.textContent.toLowerCase() || '';
+            const matches = normalizedQuery === '' || title.includes(normalizedQuery);
+            result.dataset.hidden = matches ? 'false' : 'true';
+        });
+    }
+
+    handleSearchResultClick(conversationId) {
+        console.log('Selected from search:', conversationId);
+
+        // Update active state in sidebar
+        this.elements.historyList?.querySelectorAll('[data-conversation-id]').forEach(item => {
+            item.dataset.active = item.dataset.conversationId === conversationId ? 'true' : 'false';
+        });
+
+        // Close the search view and show chat
+        this.closeSearchView();
+
+        // TODO: Load the conversation
     }
 
     toggleSidebar(forceExpand = false) {
@@ -192,26 +286,6 @@ class HistoryPanel {
             const messages = chatWindow.querySelectorAll('.message:not(.assistant):not(:first-child)');
             messages.forEach(msg => msg.remove());
         }
-    }
-
-    handleSearch(query) {
-        const normalizedQuery = query.toLowerCase().trim();
-        const items = this.elements.historyList?.querySelectorAll('[data-conversation-id]');
-        const groups = this.elements.historyList?.querySelectorAll('[data-conversation-group]');
-
-        items?.forEach(item => {
-            // Use semantic selector for title
-            const titleEl = item.querySelector('[data-conversation-title]');
-            const title = titleEl?.textContent.toLowerCase() || '';
-            const matches = title.includes(normalizedQuery);
-            item.style.display = matches ? '' : 'none';
-        });
-
-        // Hide empty groups
-        groups?.forEach(group => {
-            const visibleItems = group.querySelectorAll('[data-conversation-id]:not([style*="display: none"])');
-            group.style.display = visibleItems.length > 0 ? '' : 'none';
-        });
     }
 
     handleConversationClick(item) {
