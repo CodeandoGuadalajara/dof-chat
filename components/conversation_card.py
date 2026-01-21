@@ -203,7 +203,7 @@ class ConversationCard:
                         type="button",
                         **{"aria-label": "Nueva conversación"}
                     ),
-                    class_="flex justify-center px-2 py-3 shrink-0"
+                    class_="flex justify-center px-4 py-3 shrink-0"
                 ),
                 
                 # Main content area (only visible when expanded)
@@ -258,7 +258,7 @@ class ConversationCard:
                         type="button",
                         **{"aria-label": "Configuración"}
                     ),
-                    class_="flex justify-center px-2 py-3 border-t border-gray-200 mt-auto shrink-0"
+                    class_="flex justify-center px-2 py-3 group-data-[state=collapsed]/sidebar:pt-[0.1rem] group-data-[state=collapsed]/sidebar:pb-1.5 border-t border-gray-200 mt-auto shrink-0"
                 ),
                 
                 class_="flex flex-col h-full w-full"
