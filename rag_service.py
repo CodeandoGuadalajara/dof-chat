@@ -16,6 +16,7 @@ from models import Document
 from schemas import EnrichedChatResponse, ChunkData, DocumentSource
 from utils.logger import logger
 from utils.context_renderer import render_embedded_sources
+from utils.date_utils import extract_date_from_title
 
 
 class RAGService:
@@ -278,12 +279,11 @@ NOTA: Esta es una respuesta simulada para pruebas de integración. En el modo de
             doc = doc_map[doc_id]
             title = doc.title or f"Documento {doc.id}"
             
-            # Format date for display (age metadata to be calculated later)
-            pub_date = doc.created_at.isoformat() if doc.created_at else None
-            age_desc = None
-            age_emoji = None
+            # Extract publication date and age info from title (DDMMAAAA format)
+            pub_date, age_desc, age_emoji = extract_date_from_title(title)
             
             url = doc.url
+
 
             doc_source = DocumentSource(
                 title=title,

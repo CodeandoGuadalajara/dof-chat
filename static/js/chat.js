@@ -28,7 +28,7 @@ class ChatClient {
             chatInput: document.getElementById('chat-input'),
             sendButton: document.getElementById('send-button')
         };
-        
+
         this.initializeEventListeners();
     }
 
@@ -53,7 +53,7 @@ class ChatClient {
         this.setInputEnabled(false);
         this.elements.chatInput.value = '';
         this.addMessage(message, 'user');
-        
+
         const loadingId = this.addMessage(ChatClient.MESSAGES.LOADING, 'loading');
 
         try {
@@ -100,7 +100,7 @@ class ChatClient {
     addBotResponse(response) {
         const messageElement = document.createElement('div');
         messageElement.className = 'message bot';
-        
+
         // Add main answer
         const answerElement = document.createElement('div');
         answerElement.textContent = response.answer;
@@ -130,15 +130,15 @@ class ChatClient {
 
     isValidAndSafeAccordionHTML(html) {
         if (!html || typeof html !== 'string') return false;
-        
+
         // Check for required accordion structure
         const hasRequiredStructure = ChatClient.REQUIRED_ACCORDION_ELEMENTS
             .every(element => html.includes(element));
-        
+
         // Check for potentially dangerous content
         const hasDangerousContent = ChatClient.DANGEROUS_PATTERNS
             .some(pattern => pattern.test(html));
-        
+
         return hasRequiredStructure && !hasDangerousContent;
     }
 
@@ -146,10 +146,10 @@ class ChatClient {
         // Create a temporary element to parse and validate the HTML
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
-        
+
         // Remove any potentially dangerous attributes
         this.sanitizeElement(tempDiv);
-        
+
         // Set the cleaned content
         element.innerHTML = tempDiv.innerHTML;
     }
@@ -162,7 +162,7 @@ class ChatClient {
             null,
             false
         );
-        
+
         let node;
         while (node = walker.nextNode()) {
             // Remove dangerous attributes
@@ -171,7 +171,7 @@ class ChatClient {
                     node.removeAttribute(attr);
                 }
             });
-            
+
             // Validate href attributes
             this.sanitizeHrefAttribute(node);
         }
@@ -179,14 +179,14 @@ class ChatClient {
 
     sanitizeHrefAttribute(node) {
         if (!node.hasAttribute('href')) return;
-        
+
         const href = node.getAttribute('href');
         if (!href) return;
-        
+
         try {
             // Allow relative URLs, http, https protocols, and anchors
             if (href.startsWith('/') || href.startsWith('#')) return;
-            
+
             const url = new URL(href, window.location.origin);
             if (!['http:', 'https:'].includes(url.protocol)) {
                 node.removeAttribute('href');
@@ -219,4 +219,31 @@ class ChatClient {
 }
 
 // Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => new ChatClient());
+document.addEventListener('DOMContentLoaded', () => {
+    new ChatClient();
+
+    // Toggle all accordion functionality (using event delegation)
+    document.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('toggle-all-btn')) return;
+
+        e.stopPropagation();
+        const btn = e.target;
+        const container = btn.closest('.embedded-sources-container');
+        if (!container) return;
+
+        // Get ALL details including the main sources accordion
+        const mainAccordion = container.querySelector('.embedded-sources');
+        const innerDetails = container.querySelectorAll('.document-details, .chunk-details');
+        const isExpanding = btn.dataset.state !== 'expanded';
+
+        // Toggle main accordion
+        if (mainAccordion) {
+            mainAccordion.open = isExpanding;
+        }
+
+        // Toggle all inner accordions
+        innerDetails.forEach(d => { d.open = isExpanding; });
+        btn.dataset.state = isExpanding ? 'expanded' : 'collapsed';
+        btn.textContent = isExpanding ? 'Colapsar ↑' : 'Expandir ↓';
+    });
+});

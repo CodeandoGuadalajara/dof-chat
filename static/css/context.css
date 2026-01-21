@@ -81,15 +81,56 @@
 .chunk-summary {
     cursor: pointer;
     padding: var(--context-padding-sm);
+    padding-bottom: calc(var(--context-padding-sm) + 14px);
     font-weight: 500;
     font-size: var(--context-text-sm);
     color: var(--body-text-color, #333);
     background: var(--background-fill-secondary, #f8f9fa);
     border-radius: var(--context-border-radius-md) var(--context-border-radius-md) 0 0;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+/* Chevron indicator - rotates when open */
+.chunk-details>.chunk-summary::before {
+    content: "▶";
+    font-size: 0.65em;
+    color: var(--color-accent, #667eea);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.chunk-details[open]>.chunk-summary::before {
+    transform: rotate(90deg);
+}
+
+/* "Ver más" indicator - bottom right corner */
+.chunk-details>.chunk-summary::after {
+    content: "Ver más ↓";
+    position: absolute;
+    bottom: 2px;
+    right: 6px;
+    font-size: 0.6em;
+    font-weight: 400;
+    color: var(--color-accent, #667eea);
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.chunk-details[open]>.chunk-summary::after {
+    content: "Ver menos ↑";
+}
+
+.chunk-summary:hover::after {
+    opacity: 1;
 }
 
 .chunk-summary:hover {
-    background: var(--border-color-accent, #e9ecef);
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.08), var(--background-fill-secondary, #f8f9fa));
 }
 
 /* Chunk content wrapper */
@@ -127,15 +168,16 @@
         max-height: 120px;
         font-size: 0.7em;
     }
-    
+
     .document-summary {
         font-size: 0.85em;
         padding: var(--context-padding-sm);
     }
-    
+
     .chunk-summary {
         font-size: 0.75em;
         padding: var(--context-padding-xs);
+        padding-bottom: calc(var(--context-padding-xs) + 12px);
     }
 }
 
@@ -152,10 +194,4 @@
 .document-metadata,
 .chunk-content {
     border: 1px solid var(--border-color-primary, #ddd);
-}
-
-/* Smooth transitions for interactive elements */
-.document-summary,
-.chunk-summary {
-    transition: background-color 0.2s ease;
 }
