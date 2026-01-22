@@ -14,7 +14,6 @@ class ConversationNewPage:
     """Page component for new conversation (chat demo)."""
     
     @staticmethod
-    # 1. MANTENEMOS 'user' (De HEAD) porque lo necesitas para Airclerk
     def render(user) -> air.Html:
         """Render the complete demo chat page with sidebar and auth."""
         
