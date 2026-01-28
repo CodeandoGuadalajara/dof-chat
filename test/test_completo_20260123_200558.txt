@@ -1,0 +1,412 @@
+Reporte - Test Completo (100+ Preguntas)
+Modelo (ruta): /home/fabian/.cache/huggingface/hub/models--Qwen--Qwen2.5-0.5B-Instruct-GGUF/snapshots/9217f5db79a29953eb74d5343926648285ec7e67/qwen2.5-0.5b-instruct-q8_0.gguf
+Modelo (corto): qwen2.5-0.5b-instruct-q8_0.gguf
+Total preguntas: 100
+Exitosos: 100
+Fallidos: 0
+Promedio latencia (ms): 433.67
+Mediana latencia (ms): 392.34
+Tiempo total (s): 43.37
+Throughput (títulos/seg): 2.31
+
+Detalle por pregunta:
+1. Pregunta: ¿Cuál es la reforma más reciente al artículo 123 constitucional?
+   Título: Actualizar artículo 123: una reforma reciente
+   Latencia (ms): 435.99
+
+2. Pregunta: ¿En qué consiste la nueva normativa sobre subcontratación laboral en México?
+   Título: Normativa Subcontratación Laboral en México: Descripción y Impacto
+   Latencia (ms): 531.63
+
+3. Pregunta: ¿Qué requisitos pide la Ley Federal del Trabajo para un despido justificado?
+   Título: LEY FEDERAL DEL TRabajo - Requisitos para despido justificado
+   Latencia (ms): 508.16
+
+4. Pregunta: ¿Cómo se calcula la prima vacacional según la LFT?
+   Título: Cómo Calcula la Prima Vacacional según LFT
+   Latencia (ms): 346.03
+
+5. Pregunta: ¿Qué cambios aplican al programa Jóvenes Construyendo el Futuro este año?
+   Título: Actualizar Programa Jóvenes Construyendo el Futuro
+   Latencia (ms): 385.53
+
+6. Pregunta: ¿Qué autoridad regula los contratos colectivos de trabajo en el país?
+   Título: Autoridades Reguladoras de Contratos Colectivos de Trabajo en el País
+   Latencia (ms): 512.4
+
+7. Pregunta: ¿Cuál es el plazo legal para responder una solicitud de transparencia?
+   Título: Orden de Resolución Legal para Transparencia
+   Latencia (ms): 299.94
+
+8. Pregunta: ¿Qué establece el Código Penal sobre el fraude digital?
+   Título: Compatibilidad y Protección en el Fraude Digital: Un Establecimiento del Código Penal
+   Latencia (ms): 538.34
+
+9. Pregunta: ¿Cómo opera la prescripción de deudas civiles en México?
+   Título: Cómo opera la prescripción de deudas civiles en México?
+   Latencia (ms): 440.11
+
+10. Pregunta: ¿Qué sanciones contempla la ley por incumplimiento de datos personales?
+   Título: LEY DE PRIVACIDAD: SANCIONES PARA INCUPLIMIENTO DE DATOS PERSONALES
+   Latencia (ms): 669.32
+
+11. Pregunta: ¿Qué obligaciones fiscales cambian con el nuevo régimen simplificado de confianza?
+   Título: Informe sobre cambios fiscales en el nuevo régimen simplificado de confianza
+   Latencia (ms): 485.84
+
+12. Pregunta: ¿Cómo se tramita una suspensión provisional en un juicio de amparo?
+   Título: Suspensión Pro provisional en Juicio de Amparo: cómo se tramita
+   Latencia (ms): 514.89
+
+13. Pregunta: ¿Qué derechos laborales tiene un trabajador eventual según la LFT?
+   Título: Los Derechos Laborales de Trabajadores Eventuales según la Ley General de las Trabajadoras (LFT)
+   Latencia (ms): 704.2
+
+14. Pregunta: ¿Cuál es el proceso para registrar una marca ante el IMPI?
+   Título: Cómo Registrar una Marca ante el IMPI
+   Latencia (ms): 292.72
+
+15. Pregunta: ¿Qué criterios usa Profeco para sancionar publicidad engañosa?
+   Título: Cómo Profeco sanciona publicidad engañosa
+   Latencia (ms): 350.8
+
+16. Pregunta: ¿Cómo se determina la pensión alimenticia en un juzgado familiar?
+   Título: Cómo determinar la pensión alimenticia en un juzgado familiar
+   Latencia (ms): 433.82
+
+17. Pregunta: ¿Qué cambios incluye la última actualización de la NOM de seguridad laboral?
+   Título: Actualizar NOM de seguridad laboral: Desafíos y soluciones
+   Latencia (ms): 438.47
+
+18. Pregunta: ¿Qué documentos requiere la apertura de una empresa ante el SAT?
+   Título: Documento Esencial para Apertura de Empresa ante SAT
+   Latencia (ms): 320.18
+
+19. Pregunta: ¿Cuál es el tiempo máximo para dictar sentencia en un juicio oral mercantil?
+   Título: Temporal máximo para dictar sentencia en juicio oral mercantil
+   Latencia (ms): 443.6
+
+20. Pregunta: ¿Qué programas sociales federales mantienen reglas de operación vigentes?
+   Título: Programas Sociales Federales: Reglas de Operación Vigentes
+   Latencia (ms): 457.97
+
+21. Pregunta: ¿Qué establece la Constitución sobre la responsabilidad patrimonial del Estado?
+   Título: Responsabilidad Patrimonial en la Constitución del Estado
+   Latencia (ms): 345.68
+
+22. Pregunta: ¿Cómo se regulan las consultas indígenas según la legislación mexicana?
+   Título: Regulación de Consultas Indígenas en México: Ley 19.203
+   Latencia (ms): 620.46
+
+23. Pregunta: ¿Qué cambios propone la iniciativa reciente sobre justicia cívica digital?
+   Título: Actualizar y modernizar la justicia cívica digital: Propuestas recientes
+   Latencia (ms): 486.35
+
+24. Pregunta: ¿Cuál es el procedimiento para impugnar una multa de tránsito?
+   Título: Cómo Impugnar Multas de Tránsito: Procedimiento y Revisión
+   Latencia (ms): 544.44
+
+25. Pregunta: ¿Qué derechos garantiza la ley a víctimas de delitos cibernéticos?
+   Título: Compatibilidad de Derechos en Contexto Cibernético
+   Latencia (ms): 347.3
+
+26. Pregunta: ¿Cómo opera la caducidad en juicios administrativos?
+   Título: Cómo opera la caducidad en juicios administrativos?
+   Latencia (ms): 371.9
+
+27. Pregunta: ¿Qué requisitos pide la ley para reconocer una unión de hecho?
+   Título: LEY PARA RECOGNIZAR UNIÓN DE HACERAS
+   Latencia (ms): 429.36
+
+28. Pregunta: ¿Cómo afecta la nueva normativa de movilidad a los taxis locales?
+   Título: Impacto de la Normativa de Movilidad en los Taxis Locales
+   Latencia (ms): 493.57
+
+29. Pregunta: ¿Qué obligaciones ambientales tienen las empresas manufactureras?
+   Título: Obligaciones Ambientales de las Empresas Manufactureras
+   Latencia (ms): 341.02
+
+30. Pregunta: ¿Cómo se tramita una constancia de situación fiscal en línea?
+   Título: Cómo tramitar una constancia de situación fiscal en línea
+   Latencia (ms): 364.63
+
+31. Pregunta: ¿Qué delitos se consideran graves en el sistema penal acusatorio?
+   Título: Los Delitos Graciosos en el Sistema Penal Acusatorio
+   Latencia (ms): 423.32
+
+32. Pregunta: ¿Cómo se actualizan las tarifas del predial según el municipio?
+   Título: Actualizaciones de Tarifas Prediales según Municipio
+   Latencia (ms): 389.35
+
+33. Pregunta: ¿Qué establece la NOM sobre ruido permitido en zonas urbanas?
+   Título: Ordenanza Nacional sobre Ruido en Zonas Urbanas
+   Latencia (ms): 345.03
+
+34. Pregunta: ¿Cuál es el proceso para solicitar un subsidio federal de vivienda?
+   Título: Cómo solicitar subsidio federal de vivienda
+   Latencia (ms): 293.89
+
+35. Pregunta: ¿Qué requisitos pide el INAI para presentar un recurso de revisión?
+   Título: Recurso de revisión INAI requisitos
+   Latencia (ms): 303.94
+
+36. Pregunta: ¿Cómo se calcula la indemnización por daño moral?
+   Título: Cómo Calcula la Indemnización por Daño Moral
+   Latencia (ms): 374.52
+
+37. Pregunta: ¿Qué reglas siguen los programas de apoyo alimentario este año?
+   Título: Reglas del Apoyo Alimentario Este Año
+   Latencia (ms): 355.11
+
+38. Pregunta: ¿Qué autoridad verifica el cumplimiento de normas de construcción?
+   Título: Autoridad de Conformidad en Construcción
+   Latencia (ms): 287.85
+
+39. Pregunta: ¿Cómo se clasifica legalmente el trabajo remoto?
+   Título: Cómo clasificar el trabajo remoto legalmente
+   Latencia (ms): 286.66
+
+40. Pregunta: ¿Qué pasa si una empresa no entrega recibos fiscales digitales?
+   Título: IVA no entregando recibos fiscales digitales
+   Latencia (ms): 324.7
+
+41. Pregunta: ¿Qué significa cuando un juez declara improcedente una demanda?
+   Título: Declara Improcedente - Definición y Significado
+   Latencia (ms): 404.1
+
+42. Pregunta: ¿Cómo se modifica un acta de nacimiento con errores?
+   Título: Cómo Modificar Acta de Nacimiento Con Erroros
+   Latencia (ms): 352.57
+
+43. Pregunta: ¿Qué autoridad regula los precios máximos de medicamentos?
+   Título: Autoridades Reguladoras de Precios Máximos de Medicamentos
+   Latencia (ms): 436.39
+
+44. Pregunta: ¿Cómo se interpreta la legítima defensa en casos domésticos?
+   Título: Defensa Legítima en Casos Domésticos: Interpretación y Justicia
+   Latencia (ms): 531.01
+
+45. Pregunta: ¿Qué requisitos pide la ley para registrar una asociación civil?
+   Título: Regulación de Asociaciones Civiles: Requisitos Específicos
+   Latencia (ms): 514.26
+
+46. Pregunta: ¿Cómo se fiscalizan los recursos destinados a obra pública?
+   Título: Cómo se Fiscaliza los Recursos de Obra Pública
+   Latencia (ms): 379.87
+
+47. Pregunta: ¿Qué normas aplican al transporte escolar seguro?
+   Título: Normas para el transporte escolar seguro
+   Latencia (ms): 275.26
+
+48. Pregunta: ¿Cómo se sanciona el abandono de obligaciones fiscales?
+   Título: Cómo sanciona el abandono de obligaciones fiscales
+   Latencia (ms): 419.91
+
+49. Pregunta: ¿Qué establece la ley sobre adopciones internacionales?
+   Título: LEY DE ADOPCIÓN INTERNACIONAL
+   Latencia (ms): 261.77
+
+50. Pregunta: ¿Cuál es el proceso para denunciar contaminación de una fábrica?
+   Título: Cómo denunciar contaminación en fábricas
+   Latencia (ms): 359.13
+
+51. Pregunta: ¿Cómo se determina la competencia territorial en juicios civiles?
+   Título: Competencia Territorial en Juicios Civiles
+   Latencia (ms): 332.45
+
+52. Pregunta: ¿Qué dice la ley sobre renta de vivienda sin contrato?
+   Título: LEY DE RENTA DE VIVIENDAS SIN CONTRATO
+   Latencia (ms): 411.21
+
+53. Pregunta: ¿Cómo se actualizan los salarios mínimos cada año?
+   Título: Actualizaciones de Salarios Minimos anuales
+   Latencia (ms): 335.15
+
+54. Pregunta: ¿Qué obligaciones tiene un arrendador ante fallas estructurales?
+   Título: Obligaciones ante Fallas Structurales en Arrendamientos
+   Latencia (ms): 409.07
+
+55. Pregunta: ¿Qué requisitos exige la ley para abrir un centro educativo privado?
+   Título: LEY PARA ABERTURA DE CENTROS EDUCATIVOS PRIVADOS
+   Latencia (ms): 437.39
+
+56. Pregunta: ¿Cómo se clasifican legalmente los delitos financieros?
+   Título: Cómo clasifican los delitos financieros en la ley
+   Latencia (ms): 380.55
+
+57. Pregunta: ¿Qué programas sociales apoyan a adultos mayores?
+   Título: Programas Sociales Apoyan a Adultes Mayormente.
+   Latencia (ms): 398.28
+
+58. Pregunta: ¿Qué reglas siguen los proyectos de presupuesto estatal?
+   Título: Reglas del Proyecto de Presupuesto Estatal
+   Latencia (ms): 345.46
+
+59. Pregunta: ¿Cómo se solicita una copia certificada de un expediente judicial?
+   Título: Cómo solicitar una copia certificada de un expediente judicial
+   Latencia (ms): 457.3
+
+60. Pregunta: ¿Qué sanciones hay por crueldad animal según el código penal local?
+   Título: Enumeración de sanciones por crueldad animal en el Código Penal Local
+   Latencia (ms): 500.01
+
+61. Pregunta: ¿Cómo se valida un contrato electrónico?
+   Título: Validación de Contratos Electrónicos: Un Enfoque Simple
+   Latencia (ms): 453.5
+
+62. Pregunta: ¿Qué normas aplican al uso de drones en zonas pobladas?
+   Título: Regulaciones en Zonas Pobladas: Normas para el Uso de Drones
+   Latencia (ms): 568.95
+
+63. Pregunta: ¿Qué autoridad supervisa los centros de verificación vehicular?
+   Título: Autoridades de Verificación Vehicular
+   Latencia (ms): 269.13
+
+64. Pregunta: ¿Cómo se reporta un abuso de autoridad policiaca?
+   Título: Cómo reportar abuso de autoridad policiaca
+   Latencia (ms): 349.61
+
+65. Pregunta: ¿Qué establece la legislación sobre minería en territorio protegido?
+   Título: Legislación sobre Minería en Territorio Protegido
+   Latencia (ms): 396.55
+
+66. Pregunta: ¿Cómo se calcula la multa por no presentar declaración anual?
+   Título: Cómo Calcula Multa por No Presentar Declaración Anual
+   Latencia (ms): 431.6
+
+67. Pregunta: ¿Qué derechos tienen los consumidores en compras digitales?
+   Título: Los Derechos de los Consumidores en Compras Digitales
+   Latencia (ms): 375.57
+
+68. Pregunta: ¿Cómo funciona la mediación en conflictos vecinales?
+   Título: Cómo funciona la mediación en conflictos vecinales
+   Latencia (ms): 355.96
+
+69. Pregunta: ¿Qué documentos pide el registro público para una compraventa?
+   Título: Registros Públicos: Documentos para Compra
+   Latencia (ms): 324.51
+
+70. Pregunta: ¿Cómo se determina el abandono de un juicio?
+   Título: Cómo determinar el abandono de un juicio
+   Latencia (ms): 349.47
+
+71. Pregunta: ¿Qué responsabilidades tiene un tutor legal de un menor?
+   Título: Responsabilidades del Tutor Legal de Menos
+   Latencia (ms): 290.09
+
+72. Pregunta: ¿Qué establece la ley sobre publicidad de comida chatarra?
+   Título: LEY DE LA PUBLICIDAD DE COMIDA CHATARRA
+   Latencia (ms): 373.46
+
+73. Pregunta: ¿Cómo denunciar ruido excesivo de un negocio?
+   Título: Cómo denunciar ruido excesivo en negocios
+   Latencia (ms): 380.66
+
+74. Pregunta: ¿Qué pasa si un servidor público no presenta declaración patrimonial?
+   Título: Declara publicitaria sin declaración patrimonial
+   Latencia (ms): 320.08
+
+75. Pregunta: ¿Qué reglas aplican al uso de cámaras de seguridad en negocios?
+   Título: Reglas de uso de cámaras de seguridad en negocios: qué aplicar?
+   Latencia (ms): 550.49
+
+76. Pregunta: ¿Cómo se impugna una acta administrativa laboral?
+   Título: Cómo impugnar una acta administrativa laboral
+   Latencia (ms): 351.17
+
+77. Pregunta: ¿Qué límites tiene la Guardia Nacional en labores civiles?
+   Título: Limitaciones de la Guardia Nacional en Labores Civiles
+   Latencia (ms): 384.46
+
+78. Pregunta: ¿Cómo se clasifica la información reservada en transparencia?
+   Título: Cómo clasificar la información reservada en transparencia
+   Latencia (ms): 351.2
+
+79. Pregunta: ¿Qué sanciones hay por alterar documentos oficiales?
+   Título: Ordenes de Sanción por Alterar Documentos oficiales
+   Latencia (ms): 438.95
+
+80. Pregunta: ¿Cómo se tramita una licencia de uso de suelo?
+   Título: Cómo tramitar una licencia de uso de suelo
+   Latencia (ms): 348.34
+
+81. Pregunta: ¿Qué requisitos existen para instalar una antena de telecomunicaciones?
+   Título: Requisitos para Instalar Antena de Telecomunicaciones
+   Latencia (ms): 395.32
+
+82. Pregunta: ¿Cómo funciona el proceso de conciliación laboral obligatoria?
+   Título: Cómo funciona el proceso de conciliación laboral obligatoria
+   Latencia (ms): 378.4
+
+83. Pregunta: ¿Qué delitos se investigan como priorizados por fiscalías estatales?
+   Título: Priorización de Delitos por Fiscalías Estatales
+   Latencia (ms): 385.39
+
+84. Pregunta: ¿Cómo se solicita un apoyo emergente tras desastre natural?
+   Título: Cómo solicitar apoyo emergente tras desastre natural
+   Latencia (ms): 379.32
+
+85. Pregunta: ¿Qué normas aplican para construcción en zonas sísmicas?
+   Título: Normas para Construcción en Zonas Sismicas
+   Latencia (ms): 350.16
+
+86. Pregunta: ¿Qué establece la ley sobre protección de especies en peligro?
+   Título: LEY DE PROTECCIÓN DE ESPECIES EN PELIGRO
+   Latencia (ms): 468.03
+
+87. Pregunta: ¿Cómo se determina la procedencia de una apelación penal?
+   Título: Cómo determinar la procedencia de una apelación penal
+   Latencia (ms): 376.43
+
+88. Pregunta: ¿Qué obligaciones tienen los bancos ante fraudes a clientes?
+   Título: Obligaciones de los Bancos ante Fraude Clientes
+   Latencia (ms): 382.0
+
+89. Pregunta: ¿Cómo se solicita el seguro de desempleo donde aplica?
+   Título: Cómo solicitar el seguro de desempleo en tu área.
+   Latencia (ms): 407.96
+
+90. Pregunta: ¿Qué autoridad revisa el cumplimiento de NOM en restaurantes?
+   Título: Autoridad Nacional de Nom en Restaurantes
+   Latencia (ms): 281.73
+
+91. Pregunta: Según el artículo 4º, ¿cómo debe interpretarse la frase ‘toda persona tiene derecho a la protección de la salud’ en casos de negligencia institucional?
+   Título: REFERENCIA A LA FRASE DE LA ARTICULO 4 DE LA CONSTITUCIÓN PARA ANALIZAR EL RIGHT DE PROTECCION DE LA SALUD EN CASOS DE INSTITUCIONAL NEGligencia
+   Latencia (ms): 1395.81
+
+92. Pregunta: ¿Cómo afecta la jurisprudencia que señala que ‘la autoridad debe motivar y fundamentar’ cuando se impugna una clausura administrativa?
+   Título: REFERENCIA: Jurisprudencia, autoridad, clausura administrativa.
+   Latencia (ms): 600.16
+
+93. Pregunta: ¿Qué implica la frase ‘se presume la inocencia hasta que se demuestre lo contrario’ en delitos de alto impacto según el sistema acusatorio?
+   Título: Implicaciones de la frase sobre la inocencia hasta que se demuestre lo contrario en delitos altos según el sistema acusatorio
+   Latencia (ms): 877.89
+
+94. Pregunta: ¿Cómo se aplica la cita del artículo 16: ‘nadie puede ser molestado en su persona o posesiones’ en revisiones vehiculares sin orden?
+   Título: Ordenamiento en vehículos sin violación de la cita del artículo 16
+   Latencia (ms): 509.42
+
+95. Pregunta: ¿Qué efectos genera la interpretación del tribunal sobre ‘responsabilidad solidaria’ en cadenas de subcontratación compleja?
+   Título: Impactos de la interpretación del tribunal sobre responsabilidad solidaria en cadenas subcontrataciones complexas
+   Latencia (ms): 693.23
+
+96. Pregunta: ¿Cómo debe entenderse el párrafo ‘los recursos públicos serán fiscalizados’ al revisar desvíos en programas sociales estatales?
+   Título: Cómo se debe entender el párrafo sobre fiscalización de programas sociales estatales.
+   Latencia (ms): 586.59
+
+97. Pregunta: ¿Qué límites establece la expresión legal ‘acto reclamado’ en la formulación de una demanda de amparo indirecto por omisión?
+   Título: Orden de amparo indirecto por omisión: límites de la expresión legal acto reclamado
+   Latencia (ms): 713.87
+
+98. Pregunta: ¿Cómo se usa la cita ‘se dará audiencia a las partes’ para invalidar decisiones administrativas tomadas sin notificar al interesado?
+   Título: Cómo invalidar decisiones administrativas sin notificar a interesado
+   Latencia (ms): 444.51
+
+99. Pregunta: ¿Qué alcance tiene la frase ‘interés legítimo’ en la admisión de demandas colectivas ambientales?
+   Título: Compatibilidad Ambiental: Interés Legítimo en la Admisión de Demandas Colectivas
+   Latencia (ms): 617.71
+
+100. Pregunta: ¿Cómo se interpreta la cláusula ‘sin perjuicio de lo dispuesto en otras leyes’ al armonizar una NOM con la legislación federal vigente?
+   Título: Ordenamiento Nacional y Legislación Federal: Interpretación de Cláusulas Contraproducentes
+   Latencia (ms): 678.99
+
